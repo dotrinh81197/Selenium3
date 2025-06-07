@@ -1,0 +1,28 @@
+# Maven target directory
+/target/
+
+# Logs
+*.log
+
+# IntelliJ IDEA specific
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# TestNG and Selenide output (optional)
+test-output/
+screenshots/
+surefire-reports/
+allure-results/
+allure-report/
+build
+
+# Local environment files
+.env
+

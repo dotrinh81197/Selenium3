@@ -2,8 +2,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
+    <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
     <artifactId>selenium3</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -14,20 +14,40 @@
         <maven.compiler.source>21</maven.compiler.source>
         <selenide.version>7.9.3</selenide.version>
         <testng.version>LATEST</testng.version>
+        <allure.version>2.29.0</allure.version>
     </properties>
 
     <dependencies>
+        <!-- Selenide -->
         <dependency>
             <groupId>com.codeborne</groupId>
             <artifactId>selenide</artifactId>
             <version>${selenide.version}</version>
         </dependency>
+
+        <!-- TestNG -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>${testng.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Allure Selenide Integration -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-selenide</artifactId>
+            <version>${allure.version}</version>
+        </dependency>
+
+        <!-- Allure TestNG Integration -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-testng</artifactId>
+            <version>${allure.version}</version>
+        </dependency>
+
+        <!-- WebDriverManager -->
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
@@ -37,6 +57,7 @@
 
     <build>
         <plugins>
+            <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -45,6 +66,28 @@
                     <release>21</release>
                 </configuration>
             </plugin>
+
+            <!-- Build timestamp generator -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-timestamp</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>maven.build.timestamp</name>
+                            <pattern>yyyy-MM-dd-HHmmss</pattern>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Test execution -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -53,8 +96,43 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/java/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
+                    <systemPropertyVariables>
+                        <allure.results.directory>allure-results/${maven.build.timestamp}</allure.results.directory>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>with-timestamp</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.4.0</version>
+                        <executions>
+                            <execution>
+                                <id>generate-timestamp</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>timestamp-property</goal>
+                                </goals>
+                                <configuration>
+                                    <name>custom.build.timestamp</name>
+                                    <pattern>yyyy-MM-dd-HHmmss</pattern>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

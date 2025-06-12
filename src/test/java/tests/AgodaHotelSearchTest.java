@@ -10,9 +10,6 @@ import utils.DateTimeUtils;
 
 import static io.qameta.allure.Allure.step;
 
-/**
- *
- */
 public class AgodaHotelSearchTest extends BaseTest {
 
     private AgodaHomePage agodaHomePage;

@@ -6,12 +6,9 @@ import pages.BasePage;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.page;
 
-/**
- * Page Object for the Agoda Home/Search Page.
- * Encapsulates elements and actions related to hotel search functionality.
- */
 public class AgodaHomePage extends BasePage {
 
     // --- Locators for elements on the Agoda Home Page ---
@@ -24,9 +21,8 @@ public class AgodaHomePage extends BasePage {
     private final SelenideElement datePickerCheckInField = $x("//div[@data-selenium='checkInBox']");
     private final SelenideElement occupancySelectorPanel = $x("//div[@data-selenium='occupancy-selector-panel']");
 
-    public AgodaHomePage openAgodaHomePage() {
-        openPath("/", AgodaHomePage.class);
-        return this;
+    public void openAgodaHomePage() {
+        open("/", AgodaHomePage.class);
     }
 
     public AgodaHomePage enterDestination(String place) {
@@ -35,7 +31,6 @@ public class AgodaHomePage extends BasePage {
         firstSuggestion.click();
         return this;
     }
-
 
     private void selectDateInCalendar(String targetDate) {
         String datePicker = "//span[@data-selenium-date='%s']";
@@ -55,14 +50,11 @@ public class AgodaHomePage extends BasePage {
         return this;
     }
 
-
     public void setFamilyTravelers(int targetRooms, int targetAdults) {
         if (!occupancySelectorPanel.shouldBe(Condition.visible).isDisplayed()) {
             travelerDropdown.shouldBe(Condition.visible).click(); // Click to open guest selector
         }
 
-        // Assuming initial is 1 room, 2 adults.
-        // Adjust rooms to targetRooms
         for (int i = 1; i < targetRooms; i++) { // From 1 to targetRooms-1 clicks
             roomsIncreaseButton.shouldBe(Condition.visible).click();
         }
@@ -77,7 +69,6 @@ public class AgodaHomePage extends BasePage {
 
     public AgodaSearchResultsPage clickSearchButton() {
         searchButton.shouldBe(Condition.visible).click();
-        // Wait for results page to load. Selenide's page() method waits implicitly.
         return page(AgodaSearchResultsPage.class);
     }
 }

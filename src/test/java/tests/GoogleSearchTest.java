@@ -1,8 +1,6 @@
 package tests;
 
-import com.codeborne.selenide.Configuration;
 import listeners.TestListener;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -11,14 +9,6 @@ import static com.codeborne.selenide.Condition.*;
 
 @Listeners(TestListener.class)
 public class GoogleSearchTest extends BaseTest {
-
-    @BeforeClass
-    public void setup() {
-        Configuration.browser = "chrome";
-        Configuration.baseUrl = "https://www.google.com";
-        Configuration.browserSize = "1920x1080";
-        Configuration.headless = true;
-    }
 
     @Test(retryAnalyzer = listeners.RetryAnalyzer.class)
     public void testGoogleSearch() {

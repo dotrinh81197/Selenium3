@@ -2,26 +2,44 @@ package listeners;
 
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.Allure;
+import io.qameta.allure.AllureLifecycle;
+import io.qameta.allure.FileSystemResultsWriter;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.testng.IAnnotationTransformer;
+import org.testng.IExecutionListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.annotations.ITestAnnotation;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class TestListener implements ITestListener, IAnnotationTransformer {
+public class TestListener implements ITestListener, IExecutionListener, IAnnotationTransformer {
 
     @Override
-    public void onStart(ITestContext context) {
-        // Only add if not already added
-        if (SelenideLogger.hasListener("AllureSelenide")) return;
+    public void onExecutionStart() {
+        AllureLifecycle lifecycle = Allure.getLifecycle();
 
-        SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
-                .screenshots(true)
-                .savePageSource(true));
+        // Get current time and format it
+        String currentTime = new SimpleDateFormat("MM-dd-HH-mm-ss").format(new Date());
+
+        FileSystemResultsWriter writer =
+                new FileSystemResultsWriter(Paths.get("allure-results/" + "report-" + currentTime));
+        Class<?> clazz = lifecycle.getClass();
+        try {
+            Field field = clazz.getDeclaredField("writer");
+            field.setAccessible(true);
+            field.set(lifecycle, writer);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        SelenideLogger.addListener("AllureSelenide", new AllureSelenide(lifecycle));
     }
 
     @Override

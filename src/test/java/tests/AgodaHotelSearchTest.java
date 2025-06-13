@@ -57,9 +57,6 @@ public class AgodaHotelSearchTest extends BaseTest {
         step("Step 3: Hotels sorted by lowest price and destination verified.");
         agodaSearchResultsPage.sortByLowestPrice();
         agodaSearchResultsPage.verifyLowestPriceSortOrder(place);
-
     }
-
-
 }
 

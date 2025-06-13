@@ -13,11 +13,9 @@ public class BasePage {
     String BASE_URL = "https://www.agoda.com";
 
     public BasePage() {
-
-        Configuration.browser = "chrome";
+        Configuration.browser = System.getProperty("browser", "chrome");
         Configuration.baseUrl = BASE_URL;
-        Configuration.browserSize = "1920x1080";
-        Configuration.headless = false;
+        Configuration.headless = Boolean.parseBoolean(System.getProperty("HEADLESS", "false"));
         Configuration.pageLoadTimeout = 50000;
     }
 

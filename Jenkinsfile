@@ -7,7 +7,6 @@ pipeline {
     }
 
     parameters {
-        string(name: 'AGENT_LABEL', defaultValue: 'test-machine', description: 'Label of the Jenkins agent')
         string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
         string(name: 'TEST_CASE_NAME', defaultValue: '', description: 'Test case name to run')
         choice(name: 'ENVIRONMENT', choices: ['AGODA', 'VJ'], description: 'Target environment')

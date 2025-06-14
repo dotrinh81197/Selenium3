@@ -109,7 +109,7 @@ pipeline {
 
            post {
                always {
-                   allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                   allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
                    echo "📊 Generating Allure report"
                    sh 'allure generate --clean --single-file ./allure-results/report-*'
                    echo "📁 Archiving Allure report"

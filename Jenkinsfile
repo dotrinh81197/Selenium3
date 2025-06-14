@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    tools {
+            // Use the exact name you configured in "Global Tool Configuration"
+            allure 'allure'
+        }
+
     environment {
         PROJECT_NAME = 'Sele3'
         EMAIL_RECIPIENTS = 'dev-team@example.com'

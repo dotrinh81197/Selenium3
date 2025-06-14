@@ -11,6 +11,7 @@ pipeline {
         string(name: 'TEST_CASE_NAME', defaultValue: '', description: 'Test case name to run')
         choice(name: 'ENVIRONMENT', choices: ['AGODA', 'VJ'], description: 'Target environment')
         choice(name: 'BROWSER_NAME', choices: ['chrome', 'firefox'], description: 'Target browser')
+        booleanParam(name: 'HEADLESS', defaultValue: true, description: 'Run test in headless mode')
     }
 
     stages {
@@ -60,7 +61,7 @@ pipeline {
                                 mvn test \\
                                 -DTEST=${params.TEST_CASE_NAME} \\
                                 -DBrowser=${params.BROWSER_NAME} \\
-                                -DTEST_ENV=${params.ENVIRONMENT}
+                                -DEnv=${params.ENVIRONMENT}
                                 -DHeadless=${params.HEADLESS}
                             """
                         } else {
@@ -68,7 +69,7 @@ pipeline {
                                 mvn test ^
                                 -DTEST=${params.TEST_CASE_NAME} ^
                                 -DBrowser=${params.BROWSER_NAME} ^
-                                -DTEST_ENV=${params.ENVIRONMENT} ^
+                                -DEnv=${params.ENVIRONMENT} ^
                                 -DHeadless=${params.HEADLESS}
                             """
                         }

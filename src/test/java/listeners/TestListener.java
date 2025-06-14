@@ -55,9 +55,10 @@ public class TestListener implements ITestListener, IExecutionListener, IAnnotat
     @Override
     public void onTestFailure(ITestResult result) {
         Allure.step("❌ Failed test: " + result.getMethod().getMethodName());
-        SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
+        SelenideLogger.addListener("AllureSelenide", new CustomAllureSelenide()
                 .screenshots(true)
                 .savePageSource(true));
+
     }
 
     @Override

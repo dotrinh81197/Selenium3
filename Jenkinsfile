@@ -57,9 +57,9 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: params.ENVIRONMENT, variable: 'CREDENTIALS_FILE')]) {
-                        def credentials = readFile file: CREDENTIALS_FILE
-                        def credentialsFilePath = "${env.WORKSPACE}/credentials.properties"
-                        writeFile file: credentialsFilePath, text: credentials
+//                         def credentials = readFile file: CREDENTIALS_FILE
+//                         def credentialsFilePath = "${env.WORKSPACE}/credentials.properties"
+//                         writeFile file: credentialsFilePath, text: credentials
 
                         echo "Running tests for environment: ${params.ENVIRONMENT}"
 
@@ -86,12 +86,14 @@ pipeline {
 
             post {
                 always {
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        commandline: 'allure',
-                        results: [[path: 'allure-results']]
-                    ])
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
+
+                    sh '''
+                        /opt/homebrew/bin/allure generate --clean --single-file ./allure-results/report-*
+                    '''
+
+                    echo "Archiving Allure report"
+                    archiveArtifacts artifacts: 'allure-report/*'
                     cleanWs()
                 }
             }

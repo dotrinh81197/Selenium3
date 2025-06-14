@@ -62,7 +62,9 @@ pipeline {
         stage('Clean Allure Results') {
             steps {
                 echo "🧹 Cleaning previous Allure results"
-                sh 'rm -rf allure-results'
+                dir("${env.WORKSPACE}") {
+                    sh 'rm -rf allure-results'
+                }
             }
         }
 

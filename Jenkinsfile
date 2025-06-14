@@ -22,12 +22,6 @@ pipeline {
 
     stages {
         stage('Trigger the Job') {
-            when {
-                 expression {
-                            // ❗ Prevent triggering self if already triggered upstream
-                            !currentBuild.getBuildCauses().any { it.toString().contains("UpstreamCause") }
-                        }
-            }
 
             steps {
                 script {
@@ -56,6 +50,17 @@ pipeline {
                     branches: [[name: "*/${params.BRANCH_NAME}"]],
                     userRemoteConfigs: scm.userRemoteConfigs
                 ]
+            }
+        }
+
+        stage('Clean Allure Results') {
+            steps {
+                echo "🧹 Cleaning previous Allure results"
+                sh 'echo ✅ Shell is working'
+
+                dir("${env.WORKSPACE}") {
+                    sh 'rm -rf allure-results'
+                }
             }
         }
 
@@ -107,16 +112,16 @@ pipeline {
                 }
             }
 
-           post {
-               always {
-                   allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
-                   echo "📊 Generating Allure report"
-                   sh 'allure generate --clean --single-file ./allure-results/report-*'
-                   echo "📁 Archiving Allure report"
-                   archiveArtifacts artifacts: 'allure-report/*'
-                   cleanWs()
-               }
-           }
+         post {
+             always {
+                 allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
+
+                 echo "📊 Generating Allure report"
+                 sh 'allure generate --clean --single-file allure-results -o allure-report'
+                 archiveArtifacts artifacts: 'allure-report/*'
+                 cleanWs()
+             }
+         }
 
         }
     }

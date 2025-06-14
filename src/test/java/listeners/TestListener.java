@@ -1,10 +1,13 @@
 package listeners;
 
+import com.codeborne.selenide.WebDriverRunner;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.Allure;
 import io.qameta.allure.AllureLifecycle;
 import io.qameta.allure.FileSystemResultsWriter;
 import io.qameta.allure.selenide.AllureSelenide;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.testng.IAnnotationTransformer;
 import org.testng.IExecutionListener;
 import org.testng.ITestContext;
@@ -12,12 +15,14 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.annotations.ITestAnnotation;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class TestListener implements ITestListener, IExecutionListener, IAnnotationTransformer {
 
@@ -55,9 +60,14 @@ public class TestListener implements ITestListener, IExecutionListener, IAnnotat
     @Override
     public void onTestFailure(ITestResult result) {
         Allure.step("❌ Failed test: " + result.getMethod().getMethodName());
-        SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
-                .screenshots(true)
-                .savePageSource(true));
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            byte[] screenshot = ((TakesScreenshot) WebDriverRunner.getWebDriver())
+                    .getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment("Screenshot", "image/png", new ByteArrayInputStream(screenshot), ".png");
+
+            Allure.addAttachment("Page Source", "text/html",
+                    Objects.requireNonNull(WebDriverRunner.getWebDriver().getPageSource()), ".html");
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ pipeline {
 
     tools {
             // Use the exact name you configured in "Global Tool Configuration"
+            maven 'maven'
             allure 'allure'
         }
 
@@ -67,21 +68,41 @@ pipeline {
                     echo "Headless: ${params.HEADLESS}"
 
                     if (isUnix()) {
-                        sh """
-                            mvn test \\
-                            -DTEST=${params.TEST_CASE_NAME} \\
-                            -DBrowser=${params.BROWSER_NAME} \\
-                            -DEnv=${params.ENVIRONMENT} \\
-                            -DHeadless=${params.HEADLESS}
-                        """
+                        if (params.TEST_CASE_NAME?.trim()) {
+                            sh """
+                                mvn test \\
+                                -DTEST=${params.TEST_CASE_NAME} \\
+                                -DBrowser=${params.BROWSER_NAME} \\
+                                -DEnv=${params.ENVIRONMENT} \\
+                                -DHeadless=${params.HEADLESS}
+                            """
+                        } else {
+                            sh """
+                                mvn test \\
+                                -DsuiteXmlFile=src/test/resources/agoda.xml \\
+                                -DBrowser=${params.BROWSER_NAME} \\
+                                -DEnv=${params.ENVIRONMENT} \\
+                                -DHeadless=${params.HEADLESS}
+                            """
+                        }
                     } else {
-                        bat """
-                            mvn test ^
-                            -DTEST=${params.TEST_CASE_NAME} ^
-                            -DBrowser=${params.BROWSER_NAME} ^
-                            -DEnv=${params.ENVIRONMENT} ^
-                            -DHeadless=${params.HEADLESS}
-                        """
+                        if (params.TEST_CASE_NAME?.trim()) {
+                            bat """
+                                mvn test ^
+                                -DTEST=${params.TEST_CASE_NAME} ^
+                                -DBrowser=${params.BROWSER_NAME} ^
+                                -DEnv=${params.ENVIRONMENT} ^
+                                -DHeadless=${params.HEADLESS}
+                            """
+                        } else {
+                            bat """
+                                mvn test ^
+                                -DsuiteXmlFile=src/test/resources/agoda.xml ^
+                                -DBrowser=${params.BROWSER_NAME} ^
+                                -DEnv=${params.ENVIRONMENT} ^
+                                -DHeadless=${params.HEADLESS}
+                            """
+                        }
                     }
                 }
             }
@@ -89,12 +110,17 @@ pipeline {
             post {
                 always {
                     allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-                    echo "Archiving Allure report"
+
+                    echo "📊 Generating Allure report"
+                    sh '''
+                        allure generate ./allure-results --clean -o allure-report
+                    '''
+
+                    echo "📦 Archiving Allure report"
                     archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
                     cleanWs()
                 }
             }
-
         }
     }
 }

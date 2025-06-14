@@ -111,7 +111,7 @@ pipeline {
                always {
                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
                    echo "📊 Generating Allure report"
-                   sh 'allure generate ./allure-results --clean -o allure-report'
+                   sh 'allure generate --single-file ./allure-results/report-* --clean'
                    echo "📁 Archiving Allure report"
                    archiveArtifacts artifacts: 'allure-report/*'
                    cleanWs()

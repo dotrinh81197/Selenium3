@@ -87,7 +87,8 @@ pipeline {
 
                     // Nếu allure chưa được add PATH hoặc bạn muốn gọi trực tiếp:
                     sh '''
-                        /opt/homebrew/bin/allure generate ./allure-results --clean -o allure-report
+                        export PATH=$PATH:/var/jenkins_home/tools/allure/bin
+                        allure generate ./allure-results --clean -o allure-report
                     '''
 
                     echo "Archiving Allure report"

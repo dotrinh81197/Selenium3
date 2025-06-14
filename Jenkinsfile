@@ -56,7 +56,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: params.ENVIRONMENT, variable: 'CREDENTIALS_FILE')]) {
+//                     withCredentials([file(credentialsId: params.ENVIRONMENT, variable: 'CREDENTIALS_FILE')]) {
 //                         def credentials = readFile file: CREDENTIALS_FILE
 //                         def credentialsFilePath = "${env.WORKSPACE}/credentials.properties"
 //                         writeFile file: credentialsFilePath, text: credentials

@@ -16,6 +16,13 @@ pipeline {
 
     stages {
         stage('Trigger the Job') {
+            when {
+                 expression {
+                            // ❗ Prevent triggering self if already triggered upstream
+                            !currentBuild.getBuildCauses().any { it.toString().contains("UpstreamCause") }
+                        }
+            }
+
             steps {
                 script {
                     def buildResult = build job: 'Sele3',

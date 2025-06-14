@@ -84,18 +84,12 @@ pipeline {
             post {
                 always {
                     allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-
-                    // Nếu allure chưa được add PATH hoặc bạn muốn gọi trực tiếp:
-                    sh '''
-                        export PATH=$PATH:/var/jenkins_home/tools/allure/bin
-                        allure generate ./allure-results --clean -o allure-report
-                    '''
-
                     echo "Archiving Allure report"
                     archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
                     cleanWs()
                 }
             }
+
         }
     }
 }

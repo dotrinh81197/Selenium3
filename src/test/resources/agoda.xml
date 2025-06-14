@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="SmokeTesting" parallel="methods" thread-count="2">
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+    </listeners>
+    <test name="Agoda Tests">
+        <classes>
+            <class name="tests.AgodaHotelSearchTest"/>
+            <class name="tests.GoogleSearchTest"/>
+        </classes>
+    </test>
+</suite>

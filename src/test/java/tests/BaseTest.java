@@ -14,7 +14,6 @@ import static io.qameta.allure.Allure.step;
 @Listeners(TestListener.class)
 public class BaseTest {
 
-    protected final String BASE_URL = "https://www.agoda.com"; // Replace with your actual application base URL
 
     @BeforeClass
     void setup() {

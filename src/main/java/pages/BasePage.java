@@ -1,43 +1,27 @@
 package pages;
 
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.WebDriverRunner;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 public class BasePage {
 
-    String BASE_URL = "https://www.agoda.com";
-
     public BasePage() {
-        Configuration.browser = System.getProperty("browser", "chrome");
-        Configuration.baseUrl = BASE_URL;
-        Configuration.headless = Boolean.parseBoolean(System.getProperty("HEADLESS", "false"));
-        Configuration.pageLoadTimeout = 50000;
-    }
+        Configuration.browser = System.getProperty("Browser", "chrome");
+        Configuration.headless = Boolean.parseBoolean(System.getProperty("Headless", "false"));
+        Configuration.pageLoadTimeout = Long.parseLong(System.getProperty("PageLoadTimeout", "50000"));
+        Configuration.browserSize = System.getProperty("BrowserSize", "1366x768");
+        Configuration.pageLoadStrategy = System.getProperty("PageLoadStrategy", "normal");
 
-    public void waitForPageLoad() {
-        WebDriver driver = WebDriverRunner.getWebDriver();
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-
-        // Wait for document ready
-        wait.until(webDriver ->
-                ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete")
-        );
-
-        // Wait for jQuery AJAX (if jQuery is present)
-        wait.until(webDriver -> {
-            try {
-                return (Long) ((JavascriptExecutor) webDriver)
-                        .executeScript("return window.jQuery != null && jQuery.active === 0");
-            } catch (Exception e) {
-                // jQuery not present – skip wait
-                return true;
-            }
-        });
+        String env = System.getProperty("env", "agoda"); // default to agoda
+        switch (env.toLowerCase()) {
+            case "agoda":
+                Configuration.baseUrl = "https://www.agoda.com";
+                break;
+            case "vj":
+                Configuration.baseUrl = "https://www.vietjetair.com";
+                break;
+            default:
+                throw new RuntimeException("Unknown env: " + env);
+        }
     }
 
 }

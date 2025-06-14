@@ -1,8 +1,9 @@
 package tests;
 
 import com.codeborne.selenide.Selenide;
-import listeners.RetryAnalyzer;
+import listeners.TestListener;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pages.Agoda.AgodaHomePage;
 import pages.Agoda.AgodaSearchResultsPage;
@@ -10,6 +11,7 @@ import utils.DateTimeUtils;
 
 import static io.qameta.allure.Allure.step;
 
+@Listeners(TestListener.class)
 public class AgodaHotelSearchTest extends BaseTest {
 
     private AgodaHomePage agodaHomePage;
@@ -25,7 +27,7 @@ public class AgodaHotelSearchTest extends BaseTest {
         agodaHomePage.openAgodaHomePage();
     }
 
-    @Test(description = "Search and sort hotel successfully", retryAnalyzer = RetryAnalyzer.class)
+    @Test(description = "Search and sort hotel successfully")
     void TC01_Search_Sort_Hotel() {
 
         String place = "Da Nang";

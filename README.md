@@ -31,3 +31,12 @@ mvn clean test
 ```bash
 mvn -Dtest=GoogleSearchTest test
 ```
+
+```bash
+mvn test -DsuiteXmlFile=testng.xml
+```
+
+```bash
+mvn test -Denv=agoda -Dbrowser=firefox -DHEADLESS=false -DpageLoadStrategy=eager 
+
+```

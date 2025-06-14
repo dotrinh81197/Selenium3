@@ -43,7 +43,6 @@ public class AgodaSearchResultsPage extends BasePage {
     public void sortByLowestPrice() {
         lowestPriceOption.scrollIntoView(false);
         lowestPriceOption.shouldBe(Condition.visible).click(); // Click on "Lowest Price" option
-        waitForPageLoad();
     }
 
     public void verifyLowestPriceSortOrder(String expectedDestination) {

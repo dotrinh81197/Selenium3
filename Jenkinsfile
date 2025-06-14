@@ -13,7 +13,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'BRANCH_NAME', defaultValue: 'trdo/updateJenkins', description: 'Branch to build')
         string(name: 'TEST_CASE_NAME', defaultValue: '', description: 'Test case name to run')
         choice(name: 'ENVIRONMENT', choices: ['AGODA', 'VJ'], description: 'Target environment')
         choice(name: 'BROWSER_NAME', choices: ['chrome', 'firefox'], description: 'Target browser')
@@ -116,9 +116,11 @@ pipeline {
 
          post {
              always {
+                 allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
+
                  echo "📊 Generating Allure report"
                  sh 'allure generate --clean --single-file allure-results -o allure-report'
-                 archiveArtifacts artifacts: 'allure-report/**/*'
+                 archiveArtifacts artifacts: 'allure-report/*'
                  cleanWs()
              }
          }

@@ -109,16 +109,11 @@ pipeline {
 
            post {
                always {
-                   allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
-
-                   sh '''
-                       /opt/homebrew/bin/allure generate --clean --single-file ./allure-results/report-*
-                   '''
-
-                   echo 'Archiving Allure report'
-
-                   archiveArtifacts artifacts: 'allure-report/*', allowEmptyArchive: true
-
+                   allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
+                   echo "📊 Generating Allure report"
+                   sh 'allure generate ./allure-results --clean -o allure-report'
+                   echo "📁 Archiving Allure report"
+                   archiveArtifacts artifacts: 'allure-report/*'
                    cleanWs()
                }
            }

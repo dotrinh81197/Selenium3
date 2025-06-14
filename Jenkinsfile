@@ -56,47 +56,46 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: params.ENVIRONMENT, variable: 'CREDENTIALS_FILE')]) {
-                        def credentials = readFile file: CREDENTIALS_FILE
-                        def credentialsFilePath = "${env.WORKSPACE}/credentials.properties"
-                        writeFile file: credentialsFilePath, text: credentials
+                    echo "Running tests for environment: ${params.ENVIRONMENT}"
+                    echo "Test case: ${params.TEST_CASE_NAME}"
+                    echo "Browser: ${params.BROWSER_NAME}"
+                    echo "Headless: ${params.HEADLESS}"
 
-                        echo "Running tests for environment: ${params.ENVIRONMENT}"
-
-                        if (isUnix()) {
-                            sh """
-                                mvn test \\
-                                -DTEST=${params.TEST_CASE_NAME} \\
-                                -DBrowser=${params.BROWSER_NAME} \\
-                                -DEnv=${params.ENVIRONMENT}
-                                -DHeadless=${params.HEADLESS}
-                            """
-                        } else {
-                            bat """
-                                mvn test ^
-                                -DTEST=${params.TEST_CASE_NAME} ^
-                                -DBrowser=${params.BROWSER_NAME} ^
-                                -DEnv=${params.ENVIRONMENT} ^
-                                -DHeadless=${params.HEADLESS}
-                            """
-                        }
+                    if (isUnix()) {
+                        sh """
+                            mvn test \\
+                            -DTEST=${params.TEST_CASE_NAME} \\
+                            -DBrowser=${params.BROWSER_NAME} \\
+                            -DEnv=${params.ENVIRONMENT} \\
+                            -DHeadless=${params.HEADLESS}
+                        """
+                    } else {
+                        bat """
+                            mvn test ^
+                            -DTEST=${params.TEST_CASE_NAME} ^
+                            -DBrowser=${params.BROWSER_NAME} ^
+                            -DEnv=${params.ENVIRONMENT} ^
+                            -DHeadless=${params.HEADLESS}
+                        """
                     }
                 }
             }
 
             post {
                 always {
-                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
 
+                    // Nếu allure chưa được add PATH hoặc bạn muốn gọi trực tiếp:
                     sh '''
-                        /opt/homebrew/bin/allure generate --clean --single-file ./allure-results/report-*
+                        export PATH=$PATH:/var/jenkins_home/tools/allure/bin
+                        allure generate ./allure-results --clean -o allure-report
                     '''
 
                     echo "Archiving Allure report"
-                    archiveArtifacts artifacts: 'allure-report/*'
+                    archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
                     cleanWs()
                 }
             }
         }
-    }
+
 }

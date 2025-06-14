@@ -13,7 +13,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'trdo/updateJenkins', description: 'Branch to build')
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
         string(name: 'TEST_CASE_NAME', defaultValue: '', description: 'Test case name to run')
         choice(name: 'ENVIRONMENT', choices: ['AGODA', 'VJ'], description: 'Target environment')
         choice(name: 'BROWSER_NAME', choices: ['chrome', 'firefox'], description: 'Target browser')
@@ -22,12 +22,6 @@ pipeline {
 
     stages {
         stage('Trigger the Job') {
-            when {
-                 expression {
-                            // ❗ Prevent triggering self if already triggered upstream
-                            !currentBuild.getBuildCauses().any { it.toString().contains("UpstreamCause") }
-                        }
-            }
 
             steps {
                 script {

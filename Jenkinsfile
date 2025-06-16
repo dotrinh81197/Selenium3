@@ -21,26 +21,6 @@ pipeline {
     }
 
     stages {
-        stage('Trigger the Job') {
-
-            steps {
-                script {
-                    def buildResult = build job: 'Sele3',
-                        wait: true,
-                        propagate: false,
-                        parameters: [
-                            string(name: 'BRANCH_NAME', value: "${params.BRANCH_NAME}"),
-                            string(name: 'BROWSER_NAME', value: "${params.BROWSER_NAME}"),
-                            string(name: 'ENVIRONMENT', value: "${params.ENVIRONMENT}"),
-                            string(name: 'TEST_SUITE', value: 'src/test/resources/agoda.xml'),
-                            booleanParam(name: 'HEADLESS', value: true),
-                            string(name: 'TEST_CASE_NAME', value: "${params.TEST_CASE_NAME}")
-                        ]
-                    echo "Triggered job ID: ${buildResult.getNumber()}"
-                    env.BUILD_RESULT_ID = buildResult.getNumber().toString()
-                }
-            }
-        }
 
         stage('Checkout') {
             steps {

@@ -23,6 +23,29 @@ pipeline {
     }
 
     stages {
+<<<<<<< trdo/updateJenkins
+=======
+        stage('Trigger the Job') {
+
+            steps {
+                script {
+                    def buildResult = build job: 'Sele3',
+                        wait: true,
+                        propagate: false,
+                        parameters: [
+                            string(name: 'BRANCH_NAME', value: "${params.BRANCH_NAME}"),
+                            string(name: 'BROWSER_NAME', value: "${params.BROWSER_NAME}"),
+                            string(name: 'ENVIRONMENT', value: "${params.ENVIRONMENT}"),
+                            string(name: 'TEST_SUITE', value: 'src/test/resources/agoda.xml'),
+                            booleanParam(name: 'HEADLESS', value: true),
+                            string(name: 'TEST_CASE_NAME', value: "${params.TEST_CASE_NAME}")
+                        ]
+                    echo "Triggered job ID: ${buildResult.getNumber()}"
+                    env.BUILD_RESULT_ID = buildResult.getNumber().toString()
+                }
+            }
+        }
+>>>>>>> main
 
         stage('Checkout') {
             steps {
@@ -97,11 +120,17 @@ pipeline {
          post {
              always {
                  allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
+<<<<<<< trdo/updateJenkins
                     sh 'which allure'
                     sh 'echo $PATH'
 
                  echo "📊 Generating Allure report"
                  sh ' allure generate --clean --single-file ./allure-results/report-*'
+=======
+
+                 echo "📊 Generating Allure report"
+                 sh 'allure generate --clean --single-file allure-results -o allure-report'
+>>>>>>> main
                  archiveArtifacts artifacts: 'allure-report/*'
                  cleanWs()
              }

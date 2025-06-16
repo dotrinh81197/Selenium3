@@ -115,6 +115,8 @@ pipeline {
          post {
              always {
                  allure includeProperties: false, jdk: '', results: [[path: 'allure-results/*']]
+                    sh 'which allure'
+                    sh 'echo $PATH'
 
                  echo "📊 Generating Allure report"
                  sh 'allure generate --clean --single-file ./allure-results/report-*'

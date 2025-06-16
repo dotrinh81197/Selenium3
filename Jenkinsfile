@@ -10,6 +10,8 @@ pipeline {
     environment {
         PROJECT_NAME = 'Sele3'
         EMAIL_RECIPIENTS = 'dev-team@example.com'
+        ALLURE_HOME = tool 'allure'
+        PATH = "${ALLURE_HOME}/bin:${env.PATH}"
     }
 
     parameters {
@@ -56,7 +58,7 @@ pipeline {
                         if (params.TEST_CASE_NAME?.trim()) {
                             sh """
                                 mvn test \\
-                                -DTEST=${params.TEST_CASE_NAME} \\
+                                -Dtest=${params.TEST_CASE_NAME} \\
                                 -DBrowser=${params.BROWSER_NAME} \\
                                 -DEnv=${params.ENVIRONMENT} \\
                                 -DHeadless=${params.HEADLESS}
@@ -74,7 +76,7 @@ pipeline {
                         if (params.TEST_CASE_NAME?.trim()) {
                             bat """
                                 mvn test ^
-                                -DTEST=${params.TEST_CASE_NAME} ^
+                                -Dtest=${params.TEST_CASE_NAME} ^
                                 -DBrowser=${params.BROWSER_NAME} ^
                                 -DEnv=${params.ENVIRONMENT} ^
                                 -DHeadless=${params.HEADLESS}
@@ -99,7 +101,7 @@ pipeline {
                     sh 'echo $PATH'
 
                  echo "📊 Generating Allure report"
-                 sh 'allure generate --clean --single-file ./allure-results/report-*'
+                 sh ' allure generate --clean --single-file ./allure-results/report-*'
                  archiveArtifacts artifacts: 'allure-report/*'
                  cleanWs()
              }

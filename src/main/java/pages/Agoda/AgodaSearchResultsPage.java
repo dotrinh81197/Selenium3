@@ -113,11 +113,20 @@ public class AgodaSearchResultsPage extends BasePage {
     }
 
     public void verifyFilterResult(String expectedDestination, String minPrice, String maxPrice, String expectedStars) {
+        hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(5));
 
-        hotelListings.shouldHave(com.codeborne.selenide.CollectionCondition.sizeGreaterThanOrEqual(5));
+        int verifiedCount = 0;
+        int currentIndex = 0;
 
-        for (int i = 0; i < 5; i++) {
-            SelenideElement hotelItem = hotelListings.get(i);
+        while (verifiedCount < 5 && currentIndex < hotelListings.size()) {
+            SelenideElement hotelItem = hotelListings.get(currentIndex++);
+
+            // --- Sold out check ---
+            SelenideElement soldOutMessageElement = hotelItem.find(By.xpath(".//span[@data-selenium='sold-out-message']"));
+            if (soldOutMessageElement.exists()) {
+                // skip sold out, don't count it
+                continue;
+            }
 
             // --- Destination ---
             SelenideElement hotelAreaElement = hotelItem.find(By.xpath(".//div[@data-selenium='area-city']"));
@@ -128,13 +137,6 @@ public class AgodaSearchResultsPage extends BasePage {
                     "Hotel destination mismatch: " + hotelAreaText);
 
             // --- Price ---
-            SelenideElement soldOutMessageElement = hotelItem.find(By.xpath(".//span[@data-selenium='sold-out-message']"));
-
-            if (soldOutMessageElement.exists()) {
-                soldOutMessageElement.should(Condition.appear); // wait if it exists
-                return;
-            }
-
             SelenideElement priceElement = hotelItem.find(By.xpath(".//span[@data-selenium='display-price']"));
             priceElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
             priceElement.scrollIntoView(true);
@@ -143,18 +145,24 @@ public class AgodaSearchResultsPage extends BasePage {
             assertTrue(price >= Integer.parseInt(minPrice) && price <= Integer.parseInt(maxPrice),
                     "Hotel price out of expected range: " + price);
 
-            // --- Star Rating ---
-            SelenideElement starElement = hotelItem.find(By.xpath(String.format(".//div[@data-testid='rating-container']//span[.='%s stars out of 5']", expectedStars)));
+            // --- Star ---
+            SelenideElement starElement = hotelItem.find(By.xpath(
+                    String.format(".//div[@data-testid='rating-container']//span[.='%s stars out of 5']", expectedStars)
+            ));
             starElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
-            String text = starElement.shouldBe(Condition.visible).getText();
-            String actualStars = text.split(" ")[0];
-
+            String actualStars = starElement.getText().split(" ")[0];
             assertEquals(actualStars, expectedStars, "Star mismatch! Expected: " + expectedStars + ", got: " + actualStars);
-            String log = "Hotel " + (i + 1) + ": Destination: " + hotelAreaText +
-                    " | Price: " + price + " | Star: " + expectedStars;
-            System.out.println(log);
-            Allure.addAttachment("Hotel #" + (i + 1) + " Details", log); // show log in allure report
 
+            String log = String.format("Hotel #%d: Destination=%s | Price=%.2f | Star=%s",
+                    verifiedCount + 1, hotelAreaText, price, expectedStars);
+            System.out.println(log);
+            Allure.addAttachment("Hotel #" + (verifiedCount + 1) + " Details", log);
+
+            verifiedCount++;
         }
+
+        assertTrue(verifiedCount == 5,
+                "Expected to verify 5 valid hotels but found only " + verifiedCount + ". Check sold out hotels or filters.");
     }
+
 }

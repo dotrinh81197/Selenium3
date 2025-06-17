@@ -29,6 +29,7 @@ public class AgodaHomePage extends BasePage {
         searchDestinationInput.shouldBe(Condition.visible).setValue(place);
         SelenideElement firstSuggestion = $("[data-element-name='search-box-sub-suggestion']").shouldBe(Condition.visible);
         firstSuggestion.click();
+        firstSuggestion.shouldBe(Condition.hidden);
         return this;
     }
 
@@ -39,27 +40,24 @@ public class AgodaHomePage extends BasePage {
     }
 
     public AgodaHomePage selectDates(String checkInDate, String checkOutDate) {
-        // Click on the check-in field to open the date picker
-
         if (!datePickerPopup.shouldBe(Condition.visible).isDisplayed()) {
             datePickerCheckInField.shouldBe(Condition.visible).click();
         }
         selectDateInCalendar(checkInDate);
-        selectDateInCalendar(checkOutDate); // Select check-out date
-
+        selectDateInCalendar(checkOutDate);
+        datePickerPopup.shouldBe(Condition.hidden);
         return this;
     }
 
     public void setFamilyTravelers(int targetRooms, int targetAdults) {
         if (!occupancySelectorPanel.shouldBe(Condition.visible).isDisplayed()) {
-            travelerDropdown.shouldBe(Condition.visible).click(); // Click to open guest selector
+            travelerDropdown.shouldBe(Condition.visible).click();
         }
 
-        for (int i = 1; i < targetRooms; i++) { // From 1 to targetRooms-1 clicks
+        for (int i = 1; i < targetRooms; i++) {
             roomsIncreaseButton.shouldBe(Condition.visible).click();
         }
 
-        // Adjust adults to targetAdults
         for (int i = 2; i < targetAdults; i++) {
             adultsIncreaseButton.shouldBe(Condition.visible).click();
         }

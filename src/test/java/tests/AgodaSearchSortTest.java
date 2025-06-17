@@ -12,7 +12,7 @@ import utils.DateTimeUtils;
 import static io.qameta.allure.Allure.step;
 
 @Listeners(TestListener.class)
-public class AgodaHotelSearchTest extends BaseTest {
+public class AgodaSearchSortTest extends AgodaBaseTest {
 
     private AgodaHomePage agodaHomePage;
     private AgodaSearchResultsPage agodaSearchResultsPage;

@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 @Listeners(TestListener.class)
-public class GoogleSearchTest extends BaseTest {
+public class GoogleSearchTest extends AgodaBaseTest {
 
     @Test(description = "Google search test", retryAnalyzer = listeners.RetryAnalyzer.class)
     public void testGoogleSearch() throws IOException {

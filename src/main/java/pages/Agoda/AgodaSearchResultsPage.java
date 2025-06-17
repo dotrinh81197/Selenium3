@@ -5,6 +5,7 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Allure;
 import org.openqa.selenium.By;
 import pages.BasePage;
 
@@ -120,7 +121,8 @@ public class AgodaSearchResultsPage extends BasePage {
 
             // --- Destination ---
             SelenideElement hotelAreaElement = hotelItem.find(By.xpath(".//div[@data-selenium='area-city']"));
-            hotelAreaElement.shouldBe(Condition.visible);
+            hotelAreaElement.scrollIntoView(true)
+                    .shouldBe(Condition.visible);
             String hotelAreaText = hotelAreaElement.getText();
             assertTrue(hotelAreaText.toLowerCase().contains(expectedDestination.toLowerCase()),
                     "Hotel destination mismatch: " + hotelAreaText);
@@ -128,10 +130,11 @@ public class AgodaSearchResultsPage extends BasePage {
             // --- Price ---
             SelenideElement soldOutMessageElement = hotelItem.find(By.xpath(".//span[@data-selenium='sold-out-message']"));
 
-            if (soldOutMessageElement.isDisplayed()) {
+            if (soldOutMessageElement.exists()) {
+                soldOutMessageElement.should(Condition.appear); // wait if it exists
                 return;
             }
-            
+
             SelenideElement priceElement = hotelItem.find(By.xpath(".//span[@data-selenium='display-price']"));
             priceElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
             priceElement.scrollIntoView(true);
@@ -147,7 +150,11 @@ public class AgodaSearchResultsPage extends BasePage {
             String actualStars = text.split(" ")[0];
 
             assertEquals(actualStars, expectedStars, "Star mismatch! Expected: " + expectedStars + ", got: " + actualStars);
-            System.out.println("Hotel " + (i + 1) + ": " + hotelAreaText + " | Price: " + price + " | Star: " + expectedStars);
+            String log = "Hotel " + (i + 1) + ": Destination: " + hotelAreaText +
+                    " | Price: " + price + " | Star: " + expectedStars;
+            System.out.println(log);
+            Allure.addAttachment("Hotel #" + (i + 1) + " Details", log); // show log in allure report
+
         }
     }
 }

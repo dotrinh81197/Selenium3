@@ -34,9 +34,6 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
         String checkInDate = DateTimeUtils.getNextFriday(dateFormat); // Next Friday
         String checkOutDate = DateTimeUtils.getDateFromSpecificDate(checkInDate, 3, dateFormat); // 3 days from next Friday
 
-        System.out.println("Checkin: " + checkInDate);
-        System.out.println("Checkout: " + checkOutDate);
-
         step("Step: Searching for: " + place +
                 ", Check-in: " + checkInDate +
                 ", Check-out: " + checkOutDate +
@@ -59,11 +56,12 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
         String maxPrice = "1000000";
         String star = "3";
         step("Step 3: Filter the hotels with the following info:");
-
         agodaSearchResultsPage.submitFilterInfo(minPrice, maxPrice, star);
 
+        step("Verify the price and start filtered is highlighted");
         agodaSearchResultsPage.verifyFilterHighlighted(minPrice, maxPrice, star);
 
+        step("Verify Search Result is displayed correctly with first 5 hotels ");
         agodaSearchResultsPage.verifyFilterResult(place, minPrice, maxPrice, star);
 
     }

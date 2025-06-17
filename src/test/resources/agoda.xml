@@ -6,7 +6,7 @@
     <test name="Agoda Tests">
         <classes>
             <class name="tests.AgodaSearchSortTest"/>
-            <class name="tests.GoogleSearchTest"/>
+            <class name="tests.AgodaSearchAndFilterTest"/>
         </classes>
     </test>
 </suite>

@@ -4,6 +4,8 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import pages.BasePage;
 
+import java.time.Duration;
+
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.open;
@@ -17,7 +19,7 @@ public class AgodaHomePage extends BasePage {
     private final SelenideElement travelerDropdown = $x("//div[@data-selenium='occupancyBox']"); // Traveler/Guest dropdown
     private final SelenideElement roomsIncreaseButton = $x("//div[@data-selenium='occupancyRooms']//button[@data-selenium='plus']"); // Button to increase rooms
     private final SelenideElement adultsIncreaseButton = $x("//div[@data-selenium='occupancyAdults']//button[@data-selenium='plus']"); // Button to increase adults
-    private final SelenideElement datePickerPopup = $x("//div[contains(@class,'Popup__content')]");
+    private final SelenideElement datePickerPopup = $x("//div[@class='DayPicker']");
     private final SelenideElement datePickerCheckInField = $x("//div[@data-selenium='checkInBox']");
     private final SelenideElement occupancySelectorPanel = $x("//div[@data-selenium='occupancy-selector-panel']");
 
@@ -40,9 +42,21 @@ public class AgodaHomePage extends BasePage {
     }
 
     public AgodaHomePage selectDates(String checkInDate, String checkOutDate) {
-        if (!datePickerPopup.shouldBe(Condition.visible).isDisplayed()) {
-            datePickerCheckInField.shouldBe(Condition.visible).click();
+        datePickerCheckInField.scrollIntoView(false);
+        // Make sure the check-in field is visible first
+        datePickerCheckInField.shouldBe(Condition.visible);
+
+        // Wait robustly: first exist, then visible
+        datePickerPopup.should(Condition.exist, Duration.ofSeconds(5))
+                .shouldBe(Condition.visible, Duration.ofSeconds(5));
+
+        // If still not visible (race condition), click again
+        if (!datePickerPopup.is(Condition.visible)) {
+            datePickerCheckInField.click();
+            datePickerPopup.should(Condition.exist, Duration.ofSeconds(5))
+                    .shouldBe(Condition.visible, Duration.ofSeconds(5));
         }
+
         selectDateInCalendar(checkInDate);
         selectDateInCalendar(checkOutDate);
         datePickerPopup.shouldBe(Condition.hidden);

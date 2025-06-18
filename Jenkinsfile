@@ -17,6 +17,10 @@ pipeline {
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build')
         string(name: 'TEST_CASE_NAME', defaultValue: '', description: 'Test case name to run')
+        choice(name: 'TEST_SUITE', description: 'Test suite to run', choices: [
+            'src/test/resources/agoda.xml',
+            'src/test/resources/vj.xml'
+        ])
         choice(name: 'ENVIRONMENT', choices: ['AGODA', 'VJ'], description: 'Target environment')
         choice(name: 'BROWSER_NAME', choices: ['chrome', 'firefox'], description: 'Target browser')
         booleanParam(name: 'HEADLESS', defaultValue: true, description: 'Run test in headless mode')
@@ -59,17 +63,17 @@ pipeline {
                             sh """
                                 mvn test \\
                                 -Dtest=${params.TEST_CASE_NAME} \\
-                                -DBrowser=${params.BROWSER_NAME} \\
+                                -Dselenide.browser=${params.BROWSER_NAME} \\
                                 -DEnv=${params.ENVIRONMENT} \\
-                                -DHeadless=${params.HEADLESS}
+                                -Dselenide.headless=${params.HEADLESS}
                             """
                         } else {
                             sh """
                                 mvn test \\
-                                -DsuiteXmlFile=src/test/resources/agoda.xml \\
-                                -DBrowser=${params.BROWSER_NAME} \\
+                                -DsuiteXmlFile=${params.TEST_SUITE} \\
+                                -Dselenide.browser=${params.BROWSER_NAME} \\
                                 -DEnv=${params.ENVIRONMENT} \\
-                                -DHeadless=${params.HEADLESS}
+                                -Dselenide.headless=${params.HEADLESS}
                             """
                         }
                     } else {
@@ -77,14 +81,14 @@ pipeline {
                             bat """
                                 mvn test ^
                                 -Dtest=${params.TEST_CASE_NAME} ^
-                                -DBrowser=${params.BROWSER_NAME} ^
+                                -Dselenide.browser=${params.BROWSER_NAME} ^
                                 -DEnv=${params.ENVIRONMENT} ^
-                                -DHeadless=${params.HEADLESS}
+                                -Dselenide.headless=${params.HEADLESS}
                             """
                         } else {
                             bat """
                                 mvn test ^
-                                -DsuiteXmlFile=src/test/resources/agoda.xml ^
+                                --DsuiteXmlFile=${params.TEST_SUITE} ^
                                 -DBrowser=${params.BROWSER_NAME} ^
                                 -DEnv=${params.ENVIRONMENT} ^
                                 -DHeadless=${params.HEADLESS}

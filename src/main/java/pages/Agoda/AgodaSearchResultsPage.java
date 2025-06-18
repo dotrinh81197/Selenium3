@@ -5,6 +5,8 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pages.BasePage;
 
 import java.time.Duration;
@@ -15,6 +17,8 @@ import static org.testng.Assert.assertTrue;
 
 
 public class AgodaSearchResultsPage extends BasePage {
+
+    private final static Logger log = LoggerFactory.getLogger(AgodaSearchResultsPage.class);
 
     // --- Locators for elements on the Search Results Page ---
     private final ElementsCollection hotelListings = $$x("(//li[@data-selenium='hotel-item'])"); // Collection of hotel elements
@@ -34,7 +38,6 @@ public class AgodaSearchResultsPage extends BasePage {
             assertTrue(areaCityText.toLowerCase().contains(expectedDestination.toLowerCase()),
                     "Hotel name should contain '" + expectedDestination + "' for hotel: " + areaCityText);
         }
-        System.out.println("Search results displayed correctly for destination: " + expectedDestination);
     }
 
     /**
@@ -48,6 +51,7 @@ public class AgodaSearchResultsPage extends BasePage {
     public void verifyLowestPriceSortOrder(String expectedDestination) {
         // Ensure at least 5 hotels are present to verify order
         hotelListings.shouldHave(com.codeborne.selenide.CollectionCondition.sizeGreaterThanOrEqual(5));
+        int verifiedCount = 0;
 
         double previousPrice = 0; // Initialize with 0 to ensure the first price is higher
         for (int i = 1; i < 6; i++) { // Check the first 5 hotels
@@ -55,7 +59,7 @@ public class AgodaSearchResultsPage extends BasePage {
             SelenideElement hotelAreaElement = hotelItem.find(By.xpath(".//div[@data-selenium='area-city']"));
             SelenideElement soldOutMessageElement = hotelItem.find(By.xpath(".//span[@data-selenium='sold-out-message']"));
 
-            if (soldOutMessageElement.isDisplayed()) {
+            if (soldOutMessageElement.exists()) {
                 return;
             }
 
@@ -79,7 +83,9 @@ public class AgodaSearchResultsPage extends BasePage {
                     "Hotels are not sorted by lowest price in correct order. Issue at hotel " + (i + 1) +
                             ": Current price " + currentPrice + " was not >= previous price " + previousPrice);
             previousPrice = currentPrice;
-            System.out.println("Hotel " + (i + 1) + ": " + hotelAreaText + " - Price: " + currentPrice);
+
+            log.info("Hotel {}: {} - Price: {}", i + 1, hotelAreaText, currentPrice);
+            verifiedCount++;
         }
     }
 }

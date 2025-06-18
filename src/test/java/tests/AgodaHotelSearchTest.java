@@ -9,6 +9,8 @@ import pages.Agoda.AgodaHomePage;
 import pages.Agoda.AgodaSearchResultsPage;
 import utils.DateTimeUtils;
 
+import java.time.LocalDate;
+
 import static io.qameta.allure.Allure.step;
 
 @Listeners(TestListener.class)
@@ -17,8 +19,19 @@ public class AgodaHotelSearchTest extends BaseTest {
     private AgodaHomePage agodaHomePage;
     private AgodaSearchResultsPage agodaSearchResultsPage;
 
+    private String place;
+    private int targetRooms;
+    private int targetAdults;
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
+
     @BeforeMethod
     void setup() {
+        place = "Da Nang";
+        targetRooms = 2;
+        targetAdults = 4;
+        checkInDate = DateTimeUtils.getNextFriday();
+        checkOutDate = checkInDate.plusDays(3);
 
         agodaHomePage = new AgodaHomePage();
         agodaSearchResultsPage = new AgodaSearchResultsPage();
@@ -30,26 +43,8 @@ public class AgodaHotelSearchTest extends BaseTest {
     @Test(description = "Search and sort hotel successfully")
     void TC01_Search_Sort_Hotel() {
 
-        String place = "Da Nang";
-        int targetRooms = 2;
-        int targetAdults = 4;
-        String dateFormat = "yyyy-MM-dd";
-
-        String checkInDate = DateTimeUtils.getNextFriday(dateFormat); // Next Friday
-        String checkOutDate = DateTimeUtils.getDateFromSpecificDate(checkInDate, 3, dateFormat); // 3 days from next Friday
-
-        step("Step: Searching for: " + place +
-                ", Check-in: " + checkInDate +
-                ", Check-out: " + checkOutDate +
-                ", Rooms: " + targetRooms +
-                ", Adults: " + targetAdults);
-
-        agodaHomePage
-                .enterDestination(place)
-                .selectDates(checkInDate, checkOutDate)
-                .setFamilyTravelers(targetRooms, targetAdults);
-
-        agodaSearchResultsPage = agodaHomePage.clickSearchButton();
+        step("Step: Searching hotel");
+        agodaHomePage.searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
 
         Selenide.switchTo().window(1);
 

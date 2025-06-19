@@ -17,7 +17,11 @@ public class BaseTest {
 
     @BeforeClass
     void setup() {
-        SelenideLogger.addListener("AllureSelenide", new AllureSelenide());
+        SelenideLogger.addListener("AllureSelenide",
+                new AllureSelenide()
+                        .screenshots(true)
+                        .savePageSource(true)
+        );
     }
 
     @AfterMethod
@@ -26,6 +30,5 @@ public class BaseTest {
             Selenide.closeWebDriver();
             step("Browser closed after test.");
         }
-        SelenideLogger.removeListener("AllureSelenide");
     }
 }

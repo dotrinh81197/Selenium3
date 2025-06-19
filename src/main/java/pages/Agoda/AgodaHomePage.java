@@ -5,15 +5,18 @@ import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import pages.BasePage;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.page;
+import static com.codeborne.selenide.Selenide.switchTo;
 
 public class AgodaHomePage extends BasePage {
+
+    private final SelenideElement googlePopupIframe = $("#credential_picker_container iframe");
+    private final SelenideElement googlePopupCloseButton = $("#close");
 
     // --- Locators for elements on the Agoda Home Page ---
     private final SelenideElement searchDestinationInput = $("#textInput"); // Search input field
@@ -21,21 +24,31 @@ public class AgodaHomePage extends BasePage {
     private final SelenideElement travelerDropdown = $x("//div[@data-selenium='occupancyBox']"); // Traveler/Guest dropdown
     private final SelenideElement roomsIncreaseButton = $x("//div[@data-selenium='occupancyRooms']//button[@data-selenium='plus']"); // Button to increase rooms
     private final SelenideElement adultsIncreaseButton = $x("//div[@data-selenium='occupancyAdults']//button[@data-selenium='plus']"); // Button to increase adults
-    private final SelenideElement datePickerPopup = $x("//div[contains(@class,'Popup__content')]");
+    private final SelenideElement datePickerPopup = $x("//div[@class='DayPicker']");
     private final SelenideElement datePickerCheckInField = $x("//div[@data-selenium='checkInBox']");
     private final SelenideElement occupancySelectorPanel = $x("//div[@data-selenium='occupancy-selector-panel']");
+    private final SelenideElement defaultAdultsLabel = $x("//div[@data-selenium='desktop-occ-adult-value']");
 
     @Step("Open Agoda Home Page")
     public void openAgodaHomePage() {
         open("/", AgodaHomePage.class);
+        closeGooglePopupIfVisible();
+    }
+
+    @Step("Close Google login popup if visible")
+    private void closeGooglePopupIfVisible() {
+        if (googlePopupIframe.is(Condition.exist, defaultTimeout)) {
+            switchTo().frame(googlePopupIframe);
+            googlePopupCloseButton.shouldBe(Condition.visible, defaultTimeout).click();
+            switchTo().defaultContent();
+        }
     }
 
     @Step("Enter destination: {place}")
-    public AgodaHomePage enterDestination(String place) {
+    public void enterDestination(String place) {
         searchDestinationInput.shouldBe(Condition.visible).setValue(place);
         SelenideElement firstSuggestion = $("[data-element-name='search-box-sub-suggestion']").shouldBe(Condition.visible);
         firstSuggestion.click();
-        return this;
     }
 
     private void selectDateInCalendar(LocalDate targetDate) {
@@ -46,9 +59,9 @@ public class AgodaHomePage extends BasePage {
 
     @Step("Select dates: check-in {checkInDate}, check-out {checkOutDate}")
     public AgodaHomePage selectDates(LocalDate checkInDate, LocalDate checkOutDate) {
-        datePickerCheckInField.scrollIntoView(false);
+        datePickerCheckInField.scrollIntoView(true);
 
-        if (!datePickerPopup.is(Condition.visible, Duration.ofSeconds(4))) {
+        if (!datePickerPopup.is(Condition.visible, defaultTimeout)) {
             datePickerCheckInField.click();
             datePickerPopup.should(Condition.exist)
                     .shouldBe(Condition.visible);
@@ -56,7 +69,7 @@ public class AgodaHomePage extends BasePage {
 
         selectDateInCalendar(checkInDate);
         selectDateInCalendar(checkOutDate);
-        datePickerPopup.shouldBe(Condition.hidden);
+        datePickerPopup.shouldBe(Condition.hidden, defaultTimeout); // Ensure the date picker closes after selection
         return this;
     }
 
@@ -70,7 +83,7 @@ public class AgodaHomePage extends BasePage {
 
     @Step("Select traveler dropdown")
     public void selectTraveler() {
-        if (!occupancySelectorPanel.is(Condition.visible, Duration.ofSeconds(4))) {
+        if (!occupancySelectorPanel.is(Condition.visible, defaultTimeout)) {
             travelerDropdown.shouldBe(Condition.visible).click();
         }
     }
@@ -84,15 +97,16 @@ public class AgodaHomePage extends BasePage {
 
     @Step("Select adults: {targetAdults}")
     public void selectAdults(int targetAdults) {
-        for (int i = 1; i < targetAdults; i++) {
+        int count = Integer.parseInt(defaultAdultsLabel.getText()); // Get current number of adults
+        for (int i = count; i < targetAdults; i++) {
             adultsIncreaseButton.shouldBe(Condition.visible).click();
         }
     }
 
     @Step("Click search button")
-    public AgodaSearchResultsPage clickSearchButton() {
+    public void clickSearchButton() {
         searchButton.shouldBe(Condition.visible).click();
-        return page(AgodaSearchResultsPage.class);
+        page(AgodaSearchResultsPage.class);
     }
 
     @Step("Search hotel: destination {place}, check-in {checkInDate}, check-out {checkOutDate}, rooms {targetRooms}, adults {targetAdults}")

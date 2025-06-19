@@ -26,7 +26,7 @@ public class AgodaHotelSearchTest extends BaseTest {
     private LocalDate checkOutDate;
 
     @BeforeMethod
-    void setup() {
+    void testSetup() {
         place = "Da Nang";
         targetRooms = 2;
         targetAdults = 4;

@@ -1,5 +1,6 @@
 package tests;
 
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.WebDriverRunner;
 import com.codeborne.selenide.logevents.SelenideLogger;
@@ -14,9 +15,20 @@ import static io.qameta.allure.Allure.step;
 @Listeners(TestListener.class)
 public class BaseTest {
 
-
     @BeforeClass
-    void setup() {
+    void globalSetup() {
+        String env = System.getProperty("Env", "agoda");
+        switch (env.toLowerCase()) {
+            case "agoda":
+                Configuration.baseUrl = "https://www.agoda.com";
+                break;
+            case "vj":
+                Configuration.baseUrl = "https://www.vietjetair.com";
+                break;
+            default:
+                throw new RuntimeException("Unknown env: " + env);
+        }
+
         SelenideLogger.addListener("AllureSelenide",
                 new AllureSelenide()
                         .screenshots(true)

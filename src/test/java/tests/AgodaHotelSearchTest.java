@@ -43,7 +43,10 @@ public class AgodaHotelSearchTest extends BaseTest {
     @Test(description = "Search and sort hotel successfully")
     void TC01_Search_Sort_Hotel() {
 
-        step("Step: Searching hotel");
+        step("Select VND Currency");
+        agodaHomePage.selectCurrency("Vietnamese Dong");
+
+        step("Step 1: Searching hotel");
         agodaHomePage.searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
 
         Selenide.switchTo().window(1);

@@ -1,11 +1,13 @@
 package pages.Agoda;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import pages.BasePage;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
@@ -19,6 +21,8 @@ public class AgodaHomePage extends BasePage {
     private final SelenideElement googlePopupCloseButton = $("#close");
 
     // --- Locators for elements on the Agoda Home Page ---
+    private final SelenideElement currencyButton = $x("//div[@data-element-name='currency-container-selected-currency']");
+    private final SelenideElement changeCurrencyModal = $x("//div[@data-element-name='currency-container-modal']");
     private final SelenideElement searchDestinationInput = $("#textInput"); // Search input field
     private final SelenideElement searchButton = $x("//button[@data-selenium='searchButton']"); // Main search button
     private final SelenideElement travelerDropdown = $x("//div[@data-selenium='occupancyBox']"); // Traveler/Guest dropdown
@@ -33,6 +37,23 @@ public class AgodaHomePage extends BasePage {
     public void openAgodaHomePage() {
         open("/", AgodaHomePage.class);
         closeGooglePopupIfVisible();
+    }
+
+    @Step("Select currency")
+    public void selectCurrency(String localeCurrency) {
+        currencyButton.shouldBe(Condition.visible).click();
+        changeCurrencyModal.shouldBe(Condition.visible);
+        SelenideElement optionCurrency = $x(String.format("//li[@data-element-name='currency-popup-menu-list-item']//p[.='%s']//ancestor::div[@role='checkbox']", localeCurrency));
+
+        if (Objects.equals(optionCurrency.getAttribute("aria-checked"), "true")) {
+            $x("//div[@data-element-name='currency-container-modal']//button").click();
+
+        } else {
+            optionCurrency.shouldBe(Condition.visible).click();
+        }
+
+        changeCurrencyModal.shouldBe(Condition.hidden, defaultTimeout);
+
     }
 
     @Step("Close Google login popup if visible")

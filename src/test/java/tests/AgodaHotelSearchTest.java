@@ -24,6 +24,7 @@ public class AgodaHotelSearchTest extends BaseTest {
     private int targetAdults;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
+    private int expectedHotelsCount = 5;
 
     @BeforeMethod
     void testSetup() {
@@ -32,6 +33,7 @@ public class AgodaHotelSearchTest extends BaseTest {
         targetAdults = 4;
         checkInDate = DateTimeUtils.getNextFriday();
         checkOutDate = checkInDate.plusDays(3);
+        expectedHotelsCount = 5;
 
         agodaHomePage = new AgodaHomePage();
         agodaSearchResultsPage = new AgodaSearchResultsPage();
@@ -43,20 +45,17 @@ public class AgodaHotelSearchTest extends BaseTest {
     @Test(description = "Search and sort hotel successfully")
     void TC01_Search_Sort_Hotel() {
 
-        step("Select VND Currency");
         agodaHomePage.selectCurrency("Vietnamese Dong");
 
-        step("Step 1: Searching hotel");
         agodaHomePage.searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
 
         Selenide.switchTo().window(1);
 
-        step("Step 2: Search Result displayed correctly.");
-        agodaSearchResultsPage.verifySearchResultsDisplayed(5, place);
+        agodaSearchResultsPage.verifySearchResultsDisplayed(expectedHotelsCount, place);
 
-        step("Step 3: Hotels sorted by lowest price and destination verified.");
         agodaSearchResultsPage.sortByLowestPrice();
-        agodaSearchResultsPage.verifyLowestPriceSortOrder(place);
+
+        agodaSearchResultsPage.verifyLowestPriceSortOrder(place, expectedHotelsCount);
     }
 }
 

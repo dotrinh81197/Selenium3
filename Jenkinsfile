@@ -55,6 +55,7 @@ pipeline {
                 script {
                     echo "Running tests for environment: ${params.ENVIRONMENT}"
                     echo "Test case: ${params.TEST_CASE_NAME}"
+                    echo "Test suite: ${params.TEST_SUITE}"
                     echo "Browser: ${params.BROWSER_NAME}"
                     echo "Headless: ${params.HEADLESS}"
 

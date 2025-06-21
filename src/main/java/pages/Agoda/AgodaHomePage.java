@@ -1,13 +1,11 @@
 package pages.Agoda;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import pages.BasePage;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
@@ -45,9 +43,8 @@ public class AgodaHomePage extends BasePage {
         changeCurrencyModal.shouldBe(Condition.visible);
         SelenideElement optionCurrency = $x(String.format("//li[@data-element-name='currency-popup-menu-list-item']//p[.='%s']//ancestor::div[@role='checkbox']", localeCurrency));
 
-        if (Objects.equals(optionCurrency.getAttribute("aria-checked"), "true")) {
+        if (Boolean.parseBoolean(optionCurrency.getAttribute("aria-checked"))) {
             $x("//div[@data-element-name='currency-container-modal']//button").click();
-
         } else {
             optionCurrency.shouldBe(Condition.visible).click();
         }

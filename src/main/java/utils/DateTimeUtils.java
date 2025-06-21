@@ -7,12 +7,11 @@ import java.time.temporal.TemporalAdjusters;
 
 public class DateTimeUtils {
 
-    public static String getNextFriday(String dateFormat) {
+    public static LocalDate getNextFriday() {
         LocalDate today = LocalDate.now();
-        LocalDate nextFriday = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
-        return nextFriday.format(formatter);
+        return today.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
     }
+
 
     public static String getDateFromSpecificDate(String inputDate, int daysToAdd, String dateFormat) {
         LocalDate startDate = LocalDate.parse(inputDate, DateTimeFormatter.ofPattern(dateFormat));

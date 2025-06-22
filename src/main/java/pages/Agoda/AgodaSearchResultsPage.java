@@ -5,6 +5,7 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
+import lombok.Getter;
 import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ public class AgodaSearchResultsPage extends BasePage {
     private final static Logger log = LoggerFactory.getLogger(AgodaSearchResultsPage.class);
 
     // --- Locators for elements on the Search Results Page ---
+    @Getter
     private final ElementsCollection hotelListings = $$x("(//li[@data-selenium='hotel-item'])"); // Collection of hotel elements
     private final SelenideElement lowestPriceOption = $("[data-element-name='search-sort-price']"); // Option for Lowest Price
 

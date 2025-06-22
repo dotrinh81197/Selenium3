@@ -1,6 +1,5 @@
 package tests;
 
-import com.codeborne.selenide.Selenide;
 import listeners.TestListener;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -47,15 +46,14 @@ public class AgodaHotelSearchTest extends BaseTest {
 
         agodaHomePage.selectCurrency("Vietnamese Dong");
 
-        agodaHomePage.searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
+        AgodaSearchResultsPage resultsPage = agodaHomePage
+                .searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
 
-        Selenide.switchTo().window(1);
+        resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, place);
 
-        agodaSearchResultsPage.verifySearchResultsDisplayed(expectedHotelsCount, place);
+        resultsPage.sortByLowestPrice();
 
-        agodaSearchResultsPage.sortByLowestPrice();
-
-        agodaSearchResultsPage.verifyLowestPriceSortOrder(place, expectedHotelsCount);
+        resultsPage.verifyLowestPriceSortOrder(place, expectedHotelsCount);
     }
 }
 

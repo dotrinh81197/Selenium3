@@ -1,5 +1,6 @@
 package pages.Agoda;
 
+import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
@@ -122,16 +123,23 @@ public class AgodaHomePage extends BasePage {
     }
 
     @Step("Click search button")
-    public void clickSearchButton() {
+    public AgodaSearchResultsPage clickSearchButton() {
         searchButton.shouldBe(Condition.visible).click();
-        page(AgodaSearchResultsPage.class);
+
+        switchTo().window(1);
+
+        // Wait for the hotel list (or a reliable element)
+        AgodaSearchResultsPage resultsPage = page(AgodaSearchResultsPage.class);
+        resultsPage.getHotelListings().shouldHave(CollectionCondition.sizeGreaterThan(0));
+
+        return resultsPage;
     }
 
     @Step("Search hotel: destination {place}, check-in {checkInDate}, check-out {checkOutDate}, rooms {targetRooms}, adults {targetAdults}")
-    public void searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int targetRooms, int targetAdults) {
+    public AgodaSearchResultsPage searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int targetRooms, int targetAdults) {
         enterDestination(place);
         selectDates(checkInDate, checkOutDate);
         setFamilyTravelers(targetRooms, targetAdults);
-        clickSearchButton();
+        return clickSearchButton();
     }
 }

@@ -5,7 +5,7 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import io.qameta.allure.Allure;
+import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import pages.BasePage;
 
@@ -32,6 +32,7 @@ public class AgodaSearchResultsPage extends BasePage {
 
     private final String starRatingCheckbox = "//span[.='%s-Star rating']//ancestor::label//input";
 
+    @Step("Verify search results displayed with at least {0} hotels for destination '{1}'")
     public void verifySearchResultsDisplayed(int expectedMinHotels, String expectedDestination) {
         // Wait for at least the expected number of hotel items to be visible
         hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(expectedMinHotels));
@@ -43,8 +44,7 @@ public class AgodaSearchResultsPage extends BasePage {
             areaCity.shouldBe(Condition.visible);
             String areaCityText = areaCity.getText();
             // Perform a case-insensitive check for destination presence
-            assertTrue(areaCityText.toLowerCase().contains(expectedDestination.toLowerCase()),
-                    "Hotel name should contain '" + expectedDestination + "' for hotel: " + areaCityText);
+            assertTrue(areaCityText.toLowerCase().contains(expectedDestination.toLowerCase()), "Hotel name should contain '" + expectedDestination + "' for hotel: " + areaCityText);
         }
         System.out.println("Search results displayed correctly for destination: " + expectedDestination);
     }
@@ -82,19 +82,17 @@ public class AgodaSearchResultsPage extends BasePage {
             String priceText = priceElement.getText().replaceAll("[^\\d.]", ""); // Remove currency symbols, commas etc.
 
             // Re-verify destination
-            assertTrue(hotelAreaText.toLowerCase().contains(expectedDestination.toLowerCase()),
-                    "Hotel destination is incorrect for hotel: " + hotelAreaText);
+            assertTrue(hotelAreaText.toLowerCase().contains(expectedDestination.toLowerCase()), "Hotel destination is incorrect for hotel: " + hotelAreaText);
 
             // Parse price and verify order
             double currentPrice = Double.parseDouble(priceText);
-            assertTrue(currentPrice >= previousPrice,
-                    "Hotels are not sorted by lowest price in correct order. Issue at hotel " + (i + 1) +
-                            ": Current price " + currentPrice + " was not >= previous price " + previousPrice);
+            assertTrue(currentPrice >= previousPrice, "Hotels are not sorted by lowest price in correct order. Issue at hotel " + (i + 1) + ": Current price " + currentPrice + " was not >= previous price " + previousPrice);
             previousPrice = currentPrice;
             System.out.println("Hotel " + (i + 1) + ": " + hotelAreaText + " - Price: " + currentPrice);
         }
     }
 
+    @Step("Submit filter information with min price: {0}, max price: {1}, star rating: {2}")
     public void submitFilterInfo(String minPrice, String maxPrice, String starRating) {
         minPriceFilterTextbox.setValue(minPrice);
         maxPriceFilterTextbox.setValue(maxPrice);
@@ -103,6 +101,7 @@ public class AgodaSearchResultsPage extends BasePage {
         Selenide.Wait();
     }
 
+    @Step("Verify filter is highlighted with min price: {0}, max price: {1}, star rating: {2}")
     public void verifyFilterHighlighted(String minPrice, String maxPrice, String star) {
 
         SelenideElement starRatingElement = $x(String.format("//div[@id='SideBarLocationFilters']//legend[@id='filter-menu-RecentFilters']//following-sibling::ul//li//label[@data-element-value='%s']//div//div//input", star));
@@ -112,57 +111,74 @@ public class AgodaSearchResultsPage extends BasePage {
         assertEquals(maxPriceSlider.getAttribute("aria-valuetext"), formatVND(Integer.parseInt(maxPrice)));
     }
 
-    public void verifyFilterResult(String expectedDestination, String minPrice, String maxPrice, String expectedStars) {
-        hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(5));
+    /**
+     * Get the next valid hotel element that is not sold out.
+     *
+     * @param startIndex index to start searching from
+     * @return SelenideElement of next valid hotel, or null if none found.
+     */
+    private SelenideElement getNextValidHotel(int startIndex) {
+        for (int i = startIndex; i < hotelListings.size(); i++) {
+            SelenideElement hotel = hotelListings.get(i);
+            if (!hotel.$x(".//span[@data-selenium='sold-out-message']").exists()) {
+                return hotel;
+            }
+        }
+        return null;
+    }
+
+    @Step("Verify filter results for destination: {0}, price range: {1} - {2}, stars: {3}, expected count: {4}")
+    public void verifyFilterResult(String expectedDestination, String minPrice, String maxPrice, String expectedStars, int expectedCount) {
+        hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(expectedCount));
 
         int verifiedCount = 0;
-        int currentIndex = 0;
+        int index = 0;
 
-        while (verifiedCount < 5 && currentIndex < hotelListings.size()) {
-            SelenideElement hotelItem = hotelListings.get(currentIndex++);
-
-            // --- Sold out check ---
-            SelenideElement soldOutMessageElement = hotelItem.find(By.xpath(".//span[@data-selenium='sold-out-message']"));
-            if (soldOutMessageElement.exists()) {
-                // skip sold out, don't count it
-                continue;
+        while (verifiedCount < expectedCount) {
+            if (index >= hotelListings.size()) {
+                throw new AssertionError("Expected at least " + expectedCount + " valid hotels, but found only " + verifiedCount);
             }
 
-            // --- Destination ---
-            SelenideElement hotelAreaElement = hotelItem.find(By.xpath(".//div[@data-selenium='area-city']"));
-            hotelAreaElement.scrollIntoView(true)
-                    .shouldBe(Condition.visible);
-            String hotelAreaText = hotelAreaElement.getText();
-            assertTrue(hotelAreaText.toLowerCase().contains(expectedDestination.toLowerCase()),
-                    "Hotel destination mismatch: " + hotelAreaText);
+            SelenideElement hotelItem = hotelListings.get(index);
+            index++;
 
-            // --- Price ---
-            SelenideElement priceElement = hotelItem.find(By.xpath(".//span[@data-selenium='display-price']"));
-            priceElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
-            priceElement.scrollIntoView(true);
-            String priceText = priceElement.getText().replaceAll("[^\\d.]", "");
-            double price = Double.parseDouble(priceText);
-            assertTrue(price >= Integer.parseInt(minPrice) && price <= Integer.parseInt(maxPrice),
-                    "Hotel price out of expected range: " + price);
+            if (hotelItem.$x(".//span[@data-selenium='sold-out-message']").exists()) {
+                continue; // skip sold out
+            }
 
-            // --- Star ---
-            SelenideElement starElement = hotelItem.find(By.xpath(
-                    String.format(".//div[@data-testid='rating-container']//span[.='%s stars out of 5']", expectedStars)
-            ));
-            starElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
-            String actualStars = starElement.getText().split(" ")[0];
-            assertEquals(actualStars, expectedStars, "Star mismatch! Expected: " + expectedStars + ", got: " + actualStars);
-
-            String log = String.format("Hotel #%d: Destination=%s | Price=%.2f | Star=%s",
-                    verifiedCount + 1, hotelAreaText, price, expectedStars);
-            System.out.println(log);
-            Allure.addAttachment("Hotel #" + (verifiedCount + 1) + " Details", log);
+            verifyHotelDestination(hotelItem, expectedDestination);
+            verifyHotelPriceInRange(hotelItem, minPrice, maxPrice);
+            verifyHotelStars(hotelItem, expectedStars);
 
             verifiedCount++;
         }
+    }
 
-        assertTrue(verifiedCount == 5,
-                "Expected to verify 5 valid hotels but found only " + verifiedCount + ". Check sold out hotels or filters.");
+    @Step("Verify hotel destination matches expected: {1}")
+    public void verifyHotelDestination(SelenideElement hotelItem, String expectedDestination) {
+        SelenideElement hotelAreaElement = hotelItem.find(By.xpath(".//div[@data-selenium='area-city']"));
+        hotelAreaElement.scrollIntoView(true).shouldBe(Condition.visible);
+        String hotelAreaText = hotelAreaElement.getText();
+        assertTrue(hotelAreaText.toLowerCase().contains(expectedDestination.toLowerCase()), "Hotel destination mismatch: " + hotelAreaText);
+    }
+
+    @Step("Verify hotel price is within range: {1} - {2}")
+    public void verifyHotelPriceInRange(SelenideElement hotelItem, String minPrice, String maxPrice) {
+        SelenideElement priceElement = hotelItem.find(By.xpath(".//span[@data-selenium='display-price']"));
+        priceElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
+        priceElement.scrollIntoView(true);
+        String priceText = priceElement.getText().replaceAll("[^\\d.]", "");
+        double price = Double.parseDouble(priceText);
+        assertTrue(price >= Integer.parseInt(minPrice) && price <= Integer.parseInt(maxPrice), "Hotel price out of expected range: " + price);
+    }
+
+
+    @Step("Verify hotel stars match expected: {1}")
+    public void verifyHotelStars(SelenideElement hotelItem, String expectedStars) {
+        SelenideElement starElement = hotelItem.find(By.xpath(String.format(".//div[@data-testid='rating-container']//span[.='%s stars out of 5']", expectedStars)));
+        starElement.shouldBe(Condition.visible, Duration.ofSeconds(10));
+        String actualStars = starElement.getText().split(" ")[0];
+        assertEquals(actualStars, expectedStars, "Star mismatch! Expected: " + expectedStars + ", got: " + actualStars);
     }
 
 }

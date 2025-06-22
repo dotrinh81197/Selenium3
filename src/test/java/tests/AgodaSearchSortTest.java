@@ -9,16 +9,22 @@ import pages.Agoda.AgodaHomePage;
 import pages.Agoda.AgodaSearchResultsPage;
 import utils.DateTimeUtils;
 
+import java.time.LocalDate;
+
 import static io.qameta.allure.Allure.step;
 
 @Listeners(TestListener.class)
 public class AgodaSearchSortTest extends AgodaBaseTest {
+    LocalDate checkInDate;
+    LocalDate checkOutDate;
 
     private AgodaHomePage agodaHomePage;
     private AgodaSearchResultsPage agodaSearchResultsPage;
 
     @BeforeMethod
     void setup() {
+        checkInDate = DateTimeUtils.getNextFriday();
+        checkOutDate = checkInDate.plusDays(3);
 
         agodaHomePage = new AgodaHomePage();
         agodaSearchResultsPage = new AgodaSearchResultsPage();
@@ -34,9 +40,6 @@ public class AgodaSearchSortTest extends AgodaBaseTest {
         int targetRooms = 2;
         int targetAdults = 4;
         String dateFormat = "yyyy-MM-dd";
-
-        String checkInDate = DateTimeUtils.getNextFriday(dateFormat); // Next Friday
-        String checkOutDate = DateTimeUtils.getDateFromSpecificDate(checkInDate, 3, dateFormat); // 3 days from next Friday
 
         step("Step: Searching for: " + place +
                 ", Check-in: " + checkInDate +

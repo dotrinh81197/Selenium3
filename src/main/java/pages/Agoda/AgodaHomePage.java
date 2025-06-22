@@ -2,9 +2,11 @@ package pages.Agoda;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import controls.CalendarControl;
 import pages.BasePage;
 
 import java.time.Duration;
+import java.time.LocalDate;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
@@ -23,6 +25,11 @@ public class AgodaHomePage extends BasePage {
     private final SelenideElement datePickerCheckInField = $x("//div[@data-selenium='checkInBox']");
     private final SelenideElement occupancySelectorPanel = $x("//div[@data-selenium='occupancy-selector-panel']");
 
+
+    private final SelenideElement calendarRoot = $x("//div[@class='DayPicker']");
+    private final CalendarControl calendarControl = new CalendarControl(calendarRoot);
+
+
     public void openAgodaHomePage() {
         open("/", AgodaHomePage.class);
     }
@@ -35,13 +42,11 @@ public class AgodaHomePage extends BasePage {
         return this;
     }
 
-    private void selectDateInCalendar(String targetDate) {
-        String datePicker = "//span[@data-selenium-date='%s']";
-        String xpath = String.format(datePicker, targetDate);
-        $x(xpath).shouldBe(Condition.visible).click();
+    private void selectDateInCalendar(LocalDate targetDate) {
+        calendarControl.selectDate(targetDate);
     }
 
-    public AgodaHomePage selectDates(String checkInDate, String checkOutDate) {
+    public AgodaHomePage selectDates(LocalDate checkInDate, LocalDate checkOutDate) {
         datePickerCheckInField.scrollIntoView(false);
         // Make sure the check-in field is visible first
         datePickerCheckInField.shouldBe(Condition.visible);

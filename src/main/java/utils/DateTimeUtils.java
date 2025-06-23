@@ -12,6 +12,7 @@ public class DateTimeUtils {
         return today.with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY));
     }
 
+
     public static String getDateFromSpecificDate(String inputDate, int daysToAdd, String dateFormat) {
         LocalDate startDate = LocalDate.parse(inputDate, DateTimeFormatter.ofPattern(dateFormat));
         LocalDate calculatedDate = startDate.plusDays(daysToAdd);

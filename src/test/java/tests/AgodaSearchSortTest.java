@@ -1,6 +1,5 @@
 package tests;
 
-import com.codeborne.selenide.Selenide;
 import listeners.TestListener;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -15,19 +14,25 @@ import static io.qameta.allure.Allure.step;
 
 @Listeners(TestListener.class)
 public class AgodaSearchSortTest extends AgodaBaseTest {
-    LocalDate checkInDate;
-    LocalDate checkOutDate;
 
     private AgodaHomePage agodaHomePage;
-    private AgodaSearchResultsPage agodaSearchResultsPage;
+
+    private String place;
+    private int targetRooms;
+    private int targetAdults;
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
+    private int expectedHotelsCount = 5;
 
     @BeforeMethod
-    void setup() {
+    void testSetup() {
+        place = "Da Nang";
+        targetRooms = 2;
+        targetAdults = 4;
         checkInDate = DateTimeUtils.getNextFriday();
         checkOutDate = checkInDate.plusDays(3);
-
+        expectedHotelsCount = 5;
         agodaHomePage = new AgodaHomePage();
-        agodaSearchResultsPage = new AgodaSearchResultsPage();
 
         step("Navigate to home page");
         agodaHomePage.openAgodaHomePage();
@@ -36,32 +41,16 @@ public class AgodaSearchSortTest extends AgodaBaseTest {
     @Test(description = "Search and sort hotel successfully")
     void TC01_Search_Sort_Hotel() {
 
-        String place = "Da Nang";
-        int targetRooms = 2;
-        int targetAdults = 4;
-        String dateFormat = "yyyy-MM-dd";
+        agodaHomePage.selectCurrency("Vietnamese Dong");
 
-        step("Step: Searching for: " + place +
-                ", Check-in: " + checkInDate +
-                ", Check-out: " + checkOutDate +
-                ", Rooms: " + targetRooms +
-                ", Adults: " + targetAdults);
+        AgodaSearchResultsPage resultsPage = agodaHomePage
+                .searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
 
-        agodaHomePage
-                .enterDestination(place)
-                .selectDates(checkInDate, checkOutDate)
-                .setFamilyTravelers(targetRooms, targetAdults);
+        resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, place);
 
-        agodaSearchResultsPage = agodaHomePage.clickSearchButton();
+        resultsPage.sortByLowestPrice();
 
-        Selenide.switchTo().window(1);
-
-        step("Step 2: Search Result displayed correctly.");
-        agodaSearchResultsPage.verifySearchResultsDisplayed(5, place);
-
-        step("Step 3: Hotels sorted by lowest price and destination verified.");
-        agodaSearchResultsPage.sortByLowestPrice();
-        agodaSearchResultsPage.verifyLowestPriceSortOrder(place);
+        resultsPage.verifyLowestPriceSortOrder(place, expectedHotelsCount);
     }
 }
 

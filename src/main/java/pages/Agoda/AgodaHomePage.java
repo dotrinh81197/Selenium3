@@ -81,7 +81,7 @@ public class AgodaHomePage extends BasePage {
     }
 
     @Step("Select dates: check-in {checkInDate}, check-out {checkOutDate}")
-    public AgodaHomePage selectDates(LocalDate checkInDate, LocalDate checkOutDate) {
+    public void selectDates(LocalDate checkInDate, LocalDate checkOutDate) {
         datePickerCheckInField.scrollIntoView(true);
 
         if (!datePickerPopup.is(Condition.visible, defaultTimeout)) {
@@ -93,8 +93,7 @@ public class AgodaHomePage extends BasePage {
         selectDateInCalendar(checkInDate);
         selectDateInCalendar(checkOutDate);
 
-        datePickerPopup.shouldBe(Condition.hidden, defaultTimeout); // Ensure the date picker closes after selection
-        return this;
+        datePickerPopup.shouldBe(Condition.hidden, defaultTimeout);
     }
 
     @Step("Set family travelers: rooms {targetRooms}, adults {targetAdults}")

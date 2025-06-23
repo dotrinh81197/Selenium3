@@ -1,6 +1,5 @@
 package tests;
 
-import com.codeborne.selenide.Selenide;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pages.Agoda.AgodaHomePage;
@@ -18,12 +17,11 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
     int targetAdults;
     LocalDate checkInDate;
     LocalDate checkOutDate;
-    String minPrice;
-    String maxPrice;
+    int minPrice;
+    int maxPrice;
     String star;
     int expectedHotelCount = 5;
     private AgodaHomePage agodaHomePage;
-    private AgodaSearchResultsPage agodaSearchResultsPage;
 
     @BeforeMethod
     void setup() {
@@ -32,11 +30,10 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
         targetAdults = 4;
         checkInDate = DateTimeUtils.getNextFriday();
         checkOutDate = checkInDate.plusDays(3);
-        minPrice = "500000";
-        maxPrice = "1000000";
+        minPrice = 500000;
+        maxPrice = 1000000;
         star = "3";
         agodaHomePage = new AgodaHomePage();
-        agodaSearchResultsPage = new AgodaSearchResultsPage();
 
         step("Navigate to home page");
         agodaHomePage.openAgodaHomePage();
@@ -45,19 +42,18 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
     @Test(description = "Search and filter hotel successfully")
     void TC02_Search_Filter_Hotel() {
 
-        agodaHomePage.enterDestination(place).selectDates(checkInDate, checkOutDate).setFamilyTravelers(targetRooms, targetAdults);
+        agodaHomePage.selectCurrency("Vietnamese Dong");
 
-        agodaSearchResultsPage = agodaHomePage.clickSearchButton();
+        AgodaSearchResultsPage resultsPage = agodaHomePage
+                .searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
 
-        Selenide.switchTo().window(1);
+        resultsPage.verifySearchResultsDisplayed(expectedHotelCount, place);
 
-        agodaSearchResultsPage.verifySearchResultsDisplayed(5, place);
+        resultsPage.submitFilterInfo(minPrice, maxPrice, star);
 
-        agodaSearchResultsPage.submitFilterInfo(minPrice, maxPrice, star);
+        resultsPage.verifyFilterHighlighted(minPrice, maxPrice, star);
 
-        agodaSearchResultsPage.verifyFilterHighlighted(minPrice, maxPrice, star);
-
-        agodaSearchResultsPage.verifyFilterResult(place, minPrice, maxPrice, star, expectedHotelCount);
+        resultsPage.verifyFilterResult(place, minPrice, maxPrice, star, expectedHotelCount);
 
     }
 }

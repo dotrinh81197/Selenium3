@@ -33,20 +33,16 @@ public class AgodaSearchResultsPage extends BasePage {
     private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[@aria-label='MIN']");
     private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[@aria-label='MAX']");
 
-    private final String starRatingCheckbox = "//span[.='%s-Star rating']//ancestor::label//input";
-
     @Step("Verify that at least {expectedHotelsCount} hotels are displayed for destination: {expectedDestination}")
     public void verifySearchResultsDisplayed(int expectedHotelsCount, String expectedDestination) {
         // Wait for at least the expected number of hotel items to be visible
         hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(expectedHotelsCount));
 
-        // Verify destination in the first few hotel names (optional, but good for validation)
-        for (int i = 0; i < Math.min(expectedHotelsCount, hotelListings.size()); i++) {
+        for (int i = 0; i < expectedHotelsCount; i++) {
             SelenideElement areaCity = hotelListings.get(i).find(By.xpath(".//div[@data-selenium='area-city']"));
             areaCity.scrollIntoView(true);
             areaCity.shouldBe(Condition.visible);
             String areaCityText = areaCity.getText();
-            // Perform a case-insensitive check for destination presence
             assertTrue(areaCityText.toLowerCase().contains(expectedDestination.toLowerCase()), "Hotel name should contain '" + expectedDestination + "' for hotel: " + areaCityText);
         }
     }
@@ -62,7 +58,6 @@ public class AgodaSearchResultsPage extends BasePage {
 
     @Step("Verify hotels are sorted by lowest price for destination: {expectedDestination} (checking {countHotel} valid hotels)")
     public void verifyLowestPriceSortOrder(String expectedDestination, int expectedHotelsCount) {
-        // Wait for at least some hotels to be present (even if some are sold out)
         hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(expectedHotelsCount));
 
         double previousPrice = -1;
@@ -79,27 +74,11 @@ public class AgodaSearchResultsPage extends BasePage {
             }
 
             SelenideElement hotelItem = hotelListings.get(index);
-            SelenideElement hotelAreaElement = hotelItem.$x(".//div[@data-selenium='area-city']");
-            SelenideElement soldOutMessageElement = hotelItem.$x(".//span[@data-selenium='sold-out-message']");
-            SelenideElement priceElement = hotelItem.$x(".//span[@data-selenium='display-price']");
+            if (isSoldOut(hotelItem)) continue;
+            index++;
 
-            hotelAreaElement.shouldBe(Condition.visible, defaultTimeout);
-            String hotelAreaText = hotelAreaElement.getText();
-            assertTrue(
-                    hotelAreaText.toLowerCase().contains(expectedDestination.toLowerCase()),
-                    String.format("Destination mismatch at hotel #%d: [%s] does not contain [%s]", index + 1, hotelAreaText, expectedDestination)
-            );
-
-            if (soldOutMessageElement.is(Condition.visible, defaultTimeout)) {
-                log.info("Hotel #{} [{}] is sold out. Skipping price check.", index + 1, hotelAreaText);
-                index++;
-                continue;
-            }
-
-            priceElement.shouldBe(Condition.visible, defaultTimeout).scrollIntoView(true);
-            String priceText = priceElement.getText().replaceAll("[^\\d.]", "");
-            double currentPrice = Double.parseDouble(priceText);
-
+            verifyHotelDestination(hotelItem, expectedDestination);
+            double currentPrice = extractPrice(hotelItem);
             if (previousPrice != -1) {
                 assertTrue(
                         currentPrice >= previousPrice,
@@ -108,48 +87,30 @@ public class AgodaSearchResultsPage extends BasePage {
 
             previousPrice = currentPrice;
             validChecked++;
-            log.info("Valid Hotel #{}: {} | Price: {}", validChecked, hotelAreaText, currentPrice);
-            index++;
+            log.info("Valid Hotel #{}: Price={}", validChecked, currentPrice);
         }
     }
 
     @Step("Submit filter information with min price: {0}, max price: {1}, star rating: {2}")
-    public void submitFilterInfo(String minPrice, String maxPrice, String starRating) {
-        minPriceFilterTextbox.setValue(minPrice);
-        maxPriceFilterTextbox.setValue(maxPrice);
+    public void submitFilterInfo(int minPrice, int maxPrice, String starRating) {
+        minPriceFilterTextbox.setValue(String.valueOf(minPrice));
+        maxPriceFilterTextbox.setValue(String.valueOf(maxPrice));
+        String starRatingCheckbox = "//span[.='%s-Star rating']//ancestor::label//input";
         SelenideElement starRatingElement = $x(String.format(starRatingCheckbox, starRating));
         starRatingElement.click();
         Selenide.Wait();
     }
 
     @Step("Verify filter is highlighted with min price: {0}, max price: {1}, star rating: {2}")
-    public void verifyFilterHighlighted(String minPrice, String maxPrice, String star) {
-
+    public void verifyFilterHighlighted(int minPrice, int maxPrice, String star) {
         SelenideElement starRatingElement = $x(String.format("//div[@id='SideBarLocationFilters']//legend[@id='filter-menu-RecentFilters']//following-sibling::ul//li//label[@data-element-value='%s']//div//div//input", star));
         starRatingElement.shouldBe(Condition.selected);
-
-        assertEquals(minPriceSlider.getAttribute("aria-valuetext"), formatVND(Integer.parseInt(minPrice)));
-        assertEquals(maxPriceSlider.getAttribute("aria-valuetext"), formatVND(Integer.parseInt(maxPrice)));
-    }
-
-    /**
-     * Get the next valid hotel element that is not sold out.
-     *
-     * @param startIndex index to start searching from
-     * @return SelenideElement of next valid hotel, or null if none found.
-     */
-    private SelenideElement getNextValidHotel(int startIndex) {
-        for (int i = startIndex; i < hotelListings.size(); i++) {
-            SelenideElement hotel = hotelListings.get(i);
-            if (!hotel.$x(".//span[@data-selenium='sold-out-message']").exists()) {
-                return hotel;
-            }
-        }
-        return null;
+        assertEquals(minPriceSlider.getAttribute("aria-valuetext"), formatVND(minPrice));
+        assertEquals(maxPriceSlider.getAttribute("aria-valuetext"), formatVND(maxPrice));
     }
 
     @Step("Verify filter results for destination: {0}, price range: {1} - {2}, stars: {3}, expected count: {4}")
-    public void verifyFilterResult(String expectedDestination, String minPrice, String maxPrice, String expectedStars, int expectedCount) {
+    public void verifyFilterResult(String expectedDestination, int minPrice, int maxPrice, String expectedStars, int expectedCount) {
         hotelListings.shouldHave(CollectionCondition.sizeGreaterThanOrEqual(expectedCount));
 
         int verifiedCount = 0;
@@ -162,10 +123,7 @@ public class AgodaSearchResultsPage extends BasePage {
 
             SelenideElement hotelItem = hotelListings.get(index);
             index++;
-
-            if (hotelItem.$x(".//span[@data-selenium='sold-out-message']").exists()) {
-                continue; // skip sold out
-            }
+            if (isSoldOut(hotelItem)) continue;
 
             verifyHotelDestination(hotelItem, expectedDestination);
             verifyHotelPriceInRange(hotelItem, minPrice, maxPrice);
@@ -184,13 +142,9 @@ public class AgodaSearchResultsPage extends BasePage {
     }
 
     @Step("Verify hotel price is within range: {1} - {2}")
-    public void verifyHotelPriceInRange(SelenideElement hotelItem, String minPrice, String maxPrice) {
-        SelenideElement priceElement = hotelItem.find(By.xpath(".//span[@data-selenium='display-price']"));
-        priceElement.shouldBe(Condition.visible, defaultTimeout);
-        priceElement.scrollIntoView(true);
-        String priceText = priceElement.getText().replaceAll("[^\\d.]", "");
-        double price = Double.parseDouble(priceText);
-        assertTrue(price >= Integer.parseInt(minPrice) && price <= Integer.parseInt(maxPrice), "Hotel price out of expected range: " + price);
+    public void verifyHotelPriceInRange(SelenideElement hotelItem, int minPrice, int maxPrice) {
+        double price = extractPrice(hotelItem);
+        assertTrue(price >= minPrice && price <= maxPrice, "Hotel price out of expected range: " + price);
     }
 
 
@@ -200,6 +154,17 @@ public class AgodaSearchResultsPage extends BasePage {
         starElement.shouldBe(Condition.visible, defaultTimeout);
         String actualStars = starElement.getText().split(" ")[0];
         assertEquals(actualStars, expectedStars, "Star mismatch! Expected: " + expectedStars + ", got: " + actualStars);
+    }
+
+    private double extractPrice(SelenideElement hotel) {
+        SelenideElement price = hotel.$x(".//span[@data-selenium='display-price']");
+        price.shouldBe(Condition.visible, defaultTimeout).scrollIntoView(true);
+        String text = price.getText().replaceAll("[^\\d.]", "");
+        return Double.parseDouble(text);
+    }
+
+    private boolean isSoldOut(SelenideElement hotel) {
+        return hotel.$x(".//span[@data-selenium='sold-out-message']").exists();
     }
 
 }

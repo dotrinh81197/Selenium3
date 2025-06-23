@@ -9,9 +9,8 @@ import java.time.format.DateTimeFormatter;
 
 public class CalendarControl {
 
+    private static final DateTimeFormatter HEADER_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy");
     private final SelenideElement root;
-
-    private final DateTimeFormatter headerFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
 
     public CalendarControl(SelenideElement root) {
         this.root = root;
@@ -26,7 +25,7 @@ public class CalendarControl {
             SelenideElement monthHeader = root.$$(".DayPicker-Month").first().$(".DayPicker-Caption");
 
             String currentMonthYear = monthHeader.getText();
-            YearMonth current = YearMonth.parse(currentMonthYear, headerFormatter);
+            YearMonth current = YearMonth.parse(currentMonthYear, HEADER_FORMATTER);
 
             if (current.equals(target)) {
                 break;

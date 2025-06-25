@@ -3,7 +3,6 @@ package pages.Agoda;
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import lombok.Getter;
@@ -26,12 +25,12 @@ public class AgodaSearchResultsPage extends BasePage {
 
     // --- Locators for elements on the Search Results Page ---
     @Getter
-    private final ElementsCollection hotelListings = $$x("(//li[@data-selenium='hotel-item'])"); // Collection of hotel elements
-    private final SelenideElement lowestPriceOption = $("[data-element-name='search-sort-price']");// Option for Lowest Price
+    private final ElementsCollection hotelListings = $$x("(//li[@data-selenium='hotel-item'])");
+    private final SelenideElement lowestPriceOption = $("[data-element-name='search-sort-price']");
     private final SelenideElement minPriceFilterTextbox = $("#price_box_0");
     private final SelenideElement maxPriceFilterTextbox = $("#price_box_1");
-    private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[@aria-label='MIN']");
-    private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[@aria-label='MAX']");
+    private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-1')]");
+    private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-2')]");
 
     @Step("Verify that at least {expectedHotelsCount} hotels are displayed for destination: {expectedDestination}")
     public void verifySearchResultsDisplayed(int expectedHotelsCount, String expectedDestination) {
@@ -98,7 +97,6 @@ public class AgodaSearchResultsPage extends BasePage {
         String starRatingCheckbox = "//span[.='%s-Star rating']//ancestor::label//input";
         SelenideElement starRatingElement = $x(String.format(starRatingCheckbox, starRating));
         starRatingElement.click();
-        Selenide.Wait();
     }
 
     @Step("Verify filter is highlighted with min price: {0}, max price: {1}, star rating: {2}")
@@ -153,7 +151,7 @@ public class AgodaSearchResultsPage extends BasePage {
         SelenideElement starElement = hotelItem.find(By.xpath(String.format(".//div[@data-testid='rating-container']//span[.='%s stars out of 5']", expectedStars)));
         starElement.shouldBe(Condition.visible, defaultTimeout);
         String actualStars = starElement.getText().split(" ")[0];
-        assertEquals(actualStars, expectedStars, "Star mismatch! Expected: " + expectedStars + ", got: " + actualStars);
+        assertEquals(actualStars, expectedStars);
     }
 
     private double extractPrice(SelenideElement hotel) {

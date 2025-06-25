@@ -103,8 +103,13 @@ public class AgodaSearchResultsPage extends BasePage {
     public void verifyFilterHighlighted(int minPrice, int maxPrice, String star) {
         SelenideElement starRatingElement = $x(String.format("//div[@id='SideBarLocationFilters']//legend[@id='filter-menu-RecentFilters']//following-sibling::ul//li//label[@data-element-value='%s']//div//div//input", star));
         starRatingElement.shouldBe(Condition.selected);
-        assertEquals(minPriceSlider.getAttribute("aria-valuetext"), formatVND(minPrice));
-        assertEquals(maxPriceSlider.getAttribute("aria-valuetext"), formatVND(maxPrice));
+        verifyPriceSliderRange(minPrice, maxPrice);
+    }
+
+    @Step("Verify filter price range is highlighted with min price: {0}, max price: {1}")
+    public void verifyPriceSliderRange(int minPrice, int maxPrice) {
+        minPriceSlider.shouldHave(Condition.attribute("aria-valuetext", formatVND(minPrice)), defaultTimeout);
+        maxPriceSlider.shouldHave(Condition.attribute("aria-valuetext", formatVND(maxPrice)), defaultTimeout);
     }
 
     @Step("Verify filter results for destination: {0}, price range: {1} - {2}, stars: {3}, expected count: {4}")
@@ -165,4 +170,33 @@ public class AgodaSearchResultsPage extends BasePage {
         return hotel.$x(".//span[@data-selenium='sold-out-message']").exists();
     }
 
+    private int extractPriceFromTextbox(SelenideElement textbox) {
+        String value = textbox.getValue();
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalStateException("Textbox is empty or not loaded");
+        }
+        String digits = value.replaceAll("\\D", "");
+        return Integer.parseInt(digits);
+    }
+
+    @Step("Get default minimum price filter value")
+    public int getMinPriceFilterDefault() {
+        return extractPriceFromTextbox(minPriceFilterTextbox);
+    }
+
+    @Step("Get default maximum price filter value")
+    public int getMaxPriceFilterDefault() {
+        return extractPriceFromTextbox(maxPriceFilterTextbox);
+    }
+
+    @Step("Reset price filter to default values: minPrice={0}, maxPrice={1}")
+    public void resetPriceFilter(int minPrice, int maxPrice) {
+        minPriceFilterTextbox.shouldBe(Condition.visible).clear();
+        minPriceFilterTextbox.setValue(String.valueOf(minPrice));
+        minPriceFilterTextbox.pressEnter();
+
+        maxPriceFilterTextbox.shouldBe(Condition.visible).clear();
+        maxPriceFilterTextbox.setValue(String.valueOf(maxPrice));
+        minPriceFilterTextbox.pressEnter();
+    }
 }

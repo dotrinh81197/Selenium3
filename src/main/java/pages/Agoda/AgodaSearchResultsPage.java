@@ -1,12 +1,12 @@
 package pages.Agoda;
 
-import com.codeborne.selenide.CollectionCondition;
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.*;
 import io.qameta.allure.Step;
 import lombok.Getter;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pages.BasePage;
@@ -179,24 +179,32 @@ public class AgodaSearchResultsPage extends BasePage {
         return Integer.parseInt(digits);
     }
 
-    @Step("Get default minimum price filter value")
-    public int getMinPriceFilterDefault() {
-        return extractPriceFromTextbox(minPriceFilterTextbox);
+    @Step("Reset price filter to default values")
+    public void resetPriceFilter() {
+        minPriceSlider.scrollIntoView(false);
+
+        SelenideElement track = $(".rc-slider-rail");
+        int trackWidth = track.getSize().width;
+
+        WebDriver driver = WebDriverRunner.getWebDriver();
+        Actions actions = new Actions(driver);
+
+        // Click near left edge for min
+        actions.moveToElement(track, -trackWidth / 2 + 1, 0).click().perform();
+
+        // Click near right edge for max
+        actions.moveToElement(track, trackWidth / 2 - 1, 0).click().perform();
     }
 
-    @Step("Get default maximum price filter value")
-    public int getMaxPriceFilterDefault() {
-        return extractPriceFromTextbox(maxPriceFilterTextbox);
-    }
+    @Step("Verify price slider is reset")
+    public void verifyPriceSliderReset() {
+        String minNow = minPriceSlider.getAttribute("aria-valuenow");
+        String minExpected = minPriceSlider.getAttribute("aria-valuemin");
 
-    @Step("Reset price filter to default values: minPrice={0}, maxPrice={1}")
-    public void resetPriceFilter(int minPrice, int maxPrice) {
-        minPriceFilterTextbox.shouldBe(Condition.visible).clear();
-        minPriceFilterTextbox.setValue(String.valueOf(minPrice));
-        minPriceFilterTextbox.pressEnter();
+        String maxNow = maxPriceSlider.getAttribute("aria-valuenow");
+        String maxExpected = maxPriceSlider.getAttribute("aria-valuemax");
 
-        maxPriceFilterTextbox.shouldBe(Condition.visible).clear();
-        maxPriceFilterTextbox.setValue(String.valueOf(maxPrice));
-        minPriceFilterTextbox.pressEnter();
+        assertEquals(minNow, minExpected, "Min slider is not reset to min value");
+        assertEquals(maxNow, maxExpected, "Max slider is not reset to max value");
     }
 }

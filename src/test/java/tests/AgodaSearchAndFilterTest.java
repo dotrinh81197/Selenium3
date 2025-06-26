@@ -49,18 +49,14 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
 
         resultsPage.verifySearchResultsDisplayed(expectedHotelCount, place);
 
-        int minDefaultPrice = resultsPage.getMinPriceFilterDefault();
-        int maxDefaultPrice = resultsPage.getMaxPriceFilterDefault();
-
         resultsPage.submitFilterInfo(minPrice, maxPrice, star);
 
         resultsPage.verifyFilterHighlighted(minPrice, maxPrice, star);
 
         resultsPage.verifyFilterResult(place, minPrice, maxPrice, star, expectedHotelCount);
 
-        resultsPage.resetPriceFilter(minDefaultPrice, maxDefaultPrice);
+        resultsPage.resetPriceFilter();
 
-        resultsPage.verifyPriceSliderRange(minDefaultPrice, maxDefaultPrice);
-
+        resultsPage.verifyPriceSliderReset();
     }
 }

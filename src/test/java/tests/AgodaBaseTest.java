@@ -14,7 +14,7 @@ import org.testng.annotations.Listeners;
 import static io.qameta.allure.Allure.step;
 
 @Listeners(TestListener.class)
-public class BaseTest {
+public class AgodaBaseTest {
 
     @BeforeClass
     void globalSetup() {

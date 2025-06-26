@@ -3,6 +3,7 @@ package pages.Agoda;
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import controls.CalendarControl;
 import io.qameta.allure.Step;
 import pages.BasePage;
 
@@ -31,6 +32,10 @@ public class AgodaHomePage extends BasePage {
     private final SelenideElement datePickerCheckInField = $x("//div[@data-selenium='checkInBox']");
     private final SelenideElement occupancySelectorPanel = $x("//div[@data-selenium='occupancy-selector-panel']");
     private final SelenideElement defaultAdultsLabel = $x("//div[@data-selenium='desktop-occ-adult-value']");
+
+    private final SelenideElement calendarRoot = $x("//div[@class='DayPicker']");
+    private final CalendarControl calendarControl = new CalendarControl(calendarRoot);
+
 
     @Step("Open Agoda Home Page")
     public void openAgodaHomePage() {
@@ -68,16 +73,15 @@ public class AgodaHomePage extends BasePage {
         searchDestinationInput.shouldBe(Condition.visible).setValue(place);
         SelenideElement firstSuggestion = $("[data-element-name='search-box-sub-suggestion']").shouldBe(Condition.visible);
         firstSuggestion.click();
+        firstSuggestion.shouldBe(Condition.hidden);
     }
 
     private void selectDateInCalendar(LocalDate targetDate) {
-        String datePicker = "//span[@data-selenium-date='%s']";
-        String xpath = String.format(datePicker, targetDate);
-        $x(xpath).shouldBe(Condition.visible).click();
+        calendarControl.selectDate(targetDate);
     }
 
     @Step("Select dates: check-in {checkInDate}, check-out {checkOutDate}")
-    public AgodaHomePage selectDates(LocalDate checkInDate, LocalDate checkOutDate) {
+    public void selectDates(LocalDate checkInDate, LocalDate checkOutDate) {
         datePickerCheckInField.scrollIntoView(true);
 
         if (!datePickerPopup.is(Condition.visible, defaultTimeout)) {
@@ -88,12 +92,16 @@ public class AgodaHomePage extends BasePage {
 
         selectDateInCalendar(checkInDate);
         selectDateInCalendar(checkOutDate);
-        datePickerPopup.shouldBe(Condition.hidden, defaultTimeout); // Ensure the date picker closes after selection
-        return this;
+
+        datePickerPopup.shouldBe(Condition.hidden, defaultTimeout);
     }
 
     @Step("Set family travelers: rooms {targetRooms}, adults {targetAdults}")
     public void setFamilyTravelers(int targetRooms, int targetAdults) {
+        if (!occupancySelectorPanel.shouldBe(Condition.visible).isDisplayed()) {
+            travelerDropdown.shouldBe(Condition.visible).click();
+        }
+
         selectTraveler();
         selectRooms(targetRooms);
         selectAdults(targetAdults);

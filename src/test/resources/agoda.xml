@@ -5,8 +5,8 @@
     </listeners>
     <test name="Agoda Tests">
         <classes>
-            <class name="tests.AgodaHotelSearchTest"/>
-            <class name="tests.GoogleSearchTest"/>
+            <class name="tests.AgodaSearchSortTest"/>
+            <class name="tests.AgodaSearchAndFilterTest"/>
         </classes>
     </test>
 </suite>

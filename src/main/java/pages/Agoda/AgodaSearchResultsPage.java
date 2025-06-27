@@ -3,6 +3,7 @@ package pages.Agoda;
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import pages.BasePage;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.page;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static utils.MoneyUtils.formatVND;
@@ -31,6 +33,7 @@ public class AgodaSearchResultsPage extends BasePage {
     private final SelenideElement maxPriceFilterTextbox = $("#price_box_1");
     private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-1')]");
     private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-2')]");
+    private String propertiyFacilitiesCheckbox = "//legend[@id='filter-menu-Facilities']//following-sibling::ul//label[@data-component='search-filter-hotelfacilities']//span[@data-selenium='filter-item-text' and .='%s']";
 
     @Step("Verify that at least {expectedHotelsCount} hotels are displayed for destination: {expectedDestination}")
     public void verifySearchResultsDisplayed(int expectedHotelsCount, String expectedDestination) {
@@ -198,5 +201,38 @@ public class AgodaSearchResultsPage extends BasePage {
         maxPriceFilterTextbox.shouldBe(Condition.visible).clear();
         maxPriceFilterTextbox.setValue(String.valueOf(maxPrice));
         minPriceFilterTextbox.pressEnter();
+    }
+
+    @Step("Select hotel at index {0} from the search results")
+    public AgodaHotelDetailPage selectHotelByIndex(int index) {
+        if (index <= 0 || index > hotelListings.size()) {
+            throw new IllegalArgumentException("Invalid hotel index: " + index);
+        }
+
+        SelenideElement hotel = hotelListings.get(index - 1);
+        hotel.shouldBe(Condition.visible, defaultTimeout);
+        hotel.scrollTo().click();
+        Selenide.switchTo().window(1);
+
+        return page(AgodaHotelDetailPage.class);
+    }
+
+    public void filterFacilities(String facility) {
+        SelenideElement nonSmokingCheckbox = $x(String.format(propertiyFacilitiesCheckbox, facility));
+        if (!nonSmokingCheckbox.isSelected()) {
+            nonSmokingCheckbox.scrollIntoView(true).shouldBe(Condition.visible).click();
+        } else {
+            log.info("Facility filter already applied");
+        }
+    }
+
+    public String getHotelNameByIndex(int i) {
+        if (i < 1 || i > hotelListings.size()) {
+            throw new IllegalArgumentException("Invalid hotel index: " + i);
+        }
+        SelenideElement hotelItem = hotelListings.get(i - 1);
+        SelenideElement hotelNameElement = hotelItem.$x(".//div[@data-element-name='property-card-info']//h3[@data-selenium='hotel-name']");
+        hotelNameElement.shouldBe(Condition.visible, defaultTimeout);
+        return hotelNameElement.getText();
     }
 }

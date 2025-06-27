@@ -22,6 +22,7 @@ screenshots/
 surefire-reports/
 allure-results/
 allure-report/
+allure-report-file/
 build
 
 # Local environment files

@@ -1,10 +1,12 @@
 package pages.Agoda;
 
-import com.codeborne.selenide.*;
+import com.codeborne.selenide.CollectionCondition;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
 import io.qameta.allure.Step;
-import lombok.Getter;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
@@ -24,13 +26,16 @@ public class AgodaSearchResultsPage extends BasePage {
     private final static Logger log = LoggerFactory.getLogger(AgodaSearchResultsPage.class);
 
     // --- Locators for elements on the Search Results Page ---
-    @Getter
     private final ElementsCollection hotelListings = $$x("(//li[@data-selenium='hotel-item'])");
     private final SelenideElement lowestPriceOption = $("[data-element-name='search-sort-price']");
     private final SelenideElement minPriceFilterTextbox = $("#price_box_0");
     private final SelenideElement maxPriceFilterTextbox = $("#price_box_1");
     private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-1')]");
     private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-2')]");
+
+    public ElementsCollection getHotelListings() {
+        return hotelListings;
+    }
 
     @Step("Verify that at least {expectedHotelsCount} hotels are displayed for destination: {expectedDestination}")
     public void verifySearchResultsDisplayed(int expectedHotelsCount, String expectedDestination) {
@@ -73,6 +78,7 @@ public class AgodaSearchResultsPage extends BasePage {
             }
 
             SelenideElement hotelItem = hotelListings.get(index);
+            hotelItem.scrollIntoView(true);
             if (isSoldOut(hotelItem)) continue;
             index++;
 
@@ -126,6 +132,7 @@ public class AgodaSearchResultsPage extends BasePage {
 
             SelenideElement hotelItem = hotelListings.get(index);
             index++;
+            hotelItem.scrollIntoView(true);
             if (isSoldOut(hotelItem)) continue;
 
             verifyHotelDestination(hotelItem, expectedDestination);

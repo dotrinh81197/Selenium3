@@ -3,6 +3,7 @@ package pages.Agoda;
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 import io.qameta.allure.Step;
@@ -17,7 +18,6 @@ import utils.WindowUtils;
 import java.util.List;
 import java.util.Map;
 
-import static com.codeborne.selenide.HoverOptions.withOffset;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
@@ -255,10 +255,10 @@ public class AgodaSearchResultsPage extends BasePage {
     public Map.Entry<Integer, String> getFirstAvailableHotelName() {
         for (int i = 1; i <= hotelListings.size(); i++) {
             String name = getHotelNameByIndex(i);
-            SelenideElement hotelItem = hotelListings.get(i);
+            SelenideElement hotelItem = hotelListings.get(i - 1);
 
-            if (isSoldOut(hotelItem)){
-               continue;
+            if (isSoldOut(hotelItem)) {
+                continue;
             }
             return Map.entry(i, name);
         }

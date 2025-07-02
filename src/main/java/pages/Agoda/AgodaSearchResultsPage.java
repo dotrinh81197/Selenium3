@@ -12,7 +12,12 @@ import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pages.BasePage;
+import utils.WindowUtils;
 
+import java.util.List;
+import java.util.Map;
+
+import static com.codeborne.selenide.HoverOptions.withOffset;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
@@ -33,7 +38,6 @@ public class AgodaSearchResultsPage extends BasePage {
     private final SelenideElement maxPriceFilterTextbox = $("#price_box_1");
     private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-1')]");
     private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-2')]");
-    private String propertiyFacilitiesCheckbox = "//legend[@id='filter-menu-Facilities']//following-sibling::ul//label[@data-component='search-filter-hotelfacilities']//span[@data-selenium='filter-item-text' and .='%s']";
 
     public ElementsCollection getHotelListings() {
         return hotelListings;
@@ -179,15 +183,6 @@ public class AgodaSearchResultsPage extends BasePage {
         return hotel.$x(".//span[@data-selenium='sold-out-message']").exists();
     }
 
-    private int extractPriceFromTextbox(SelenideElement textbox) {
-        String value = textbox.getValue();
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalStateException("Textbox is empty or not loaded");
-        }
-        String digits = value.replaceAll("\\D", "");
-        return Integer.parseInt(digits);
-    }
-
     @Step("Reset price filter to default values")
     public void resetPriceFilter() {
         minPriceSlider.scrollIntoView(false);
@@ -226,27 +221,86 @@ public class AgodaSearchResultsPage extends BasePage {
         SelenideElement hotel = hotelListings.get(index - 1);
         hotel.shouldBe(Condition.visible, defaultTimeout);
         hotel.scrollTo().click();
-        Selenide.switchTo().window(1);
+        Selenide.switchTo().window(2);
 
         return page(AgodaHotelDetailPage.class);
     }
 
+    @Step("Filter hotels by facility: {facility}")
     public void filterFacilities(String facility) {
-        SelenideElement nonSmokingCheckbox = $x(String.format(propertiyFacilitiesCheckbox, facility));
-        if (!nonSmokingCheckbox.isSelected()) {
-            nonSmokingCheckbox.scrollIntoView(true).shouldBe(Condition.visible).click();
+        String propertyFacilitiesCheckbox = "//legend[@id='filter-menu-Facilities']//following-sibling::ul//label[@data-component='search-filter-hotelfacilities']//span[@data-selenium='filter-item-text' and .='%s']";
+        SelenideElement facilityCheckbox = $x(String.format(propertyFacilitiesCheckbox, facility));
+        if (!facilityCheckbox.isSelected()) {
+            facilityCheckbox.scrollIntoView(true).shouldBe(Condition.visible).click();
+            getHotelListings().shouldHave(CollectionCondition.sizeGreaterThan(0), defaultTimeout);
         } else {
             log.info("Facility filter already applied");
         }
     }
 
+    @Step("Get hotel name by index: {i}")
     public String getHotelNameByIndex(int i) {
         if (i < 1 || i > hotelListings.size()) {
             throw new IllegalArgumentException("Invalid hotel index: " + i);
         }
         SelenideElement hotelItem = hotelListings.get(i - 1);
+
+        hotelItem.scrollIntoView(true);
         SelenideElement hotelNameElement = hotelItem.$x(".//div[@data-element-name='property-card-info']//h3[@data-selenium='hotel-name']");
         hotelNameElement.shouldBe(Condition.visible, defaultTimeout);
         return hotelNameElement.getText();
+    }
+
+    @Step("Get first available (not sold out) hotel name")
+    public Map.Entry<Integer, String> getFirstAvailableHotelName() {
+        for (int i = 1; i <= hotelListings.size(); i++) {
+            String name = getHotelNameByIndex(i);
+            SelenideElement hotelItem = hotelListings.get(i);
+
+            if (isSoldOut(hotelItem)){
+               continue;
+            }
+            return Map.entry(i, name);
+        }
+        throw new RuntimeException("No available hotel found.");
+    }
+
+    private void showDetailReviewPoint(int index) {
+        ElementsCollection hotelReviewPointElements = $$x(
+                "//div[@class='ReviewWithDemographic']"
+        );
+
+        // Ensure index is valid
+        if (index <= 0 || index > hotelReviewPointElements.size()) {
+            throw new IllegalArgumentException("Invalid index: " + index);
+        }
+
+        hotelReviewPointElements.get(index - 1)
+                .scrollIntoView(false)
+                .hover();
+
+        SelenideElement popup = $x("//div[@data-selenium='demographics-review-container']");
+        popup.shouldBe(Condition.visible, defaultTimeout);
+    }
+
+    private List<String> getDetailReviewPoint() {
+        ElementsCollection labels = $$x("//span[@data-selenium='review-name']");
+        labels.first().shouldBe(Condition.visible);
+        return labels.texts();
+    }
+
+    @Step("Show and get review point labels for hotel at index: {index}")
+    public List<String> showAndGetReviewPopup(int index) {
+        showDetailReviewPoint(index);
+        return getDetailReviewPoint();
+    }
+
+    @Step("Go to hotel detail page: {hotelName}")
+    public void gotoDetail(String hotelName) {
+        $$x("//h3[@data-selenium='hotel-name']")
+                .findBy(Condition.text(hotelName))
+                .click();
+        Selenide.switchTo().window(3);
+        WindowUtils.closeOtherWindows();
     }
 }

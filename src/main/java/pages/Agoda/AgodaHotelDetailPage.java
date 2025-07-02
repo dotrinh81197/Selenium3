@@ -1,8 +1,10 @@
 package pages.Agoda;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
+import org.testng.Assert;
 import pages.BasePage;
 
 import java.util.List;
@@ -14,9 +16,9 @@ import static com.codeborne.selenide.Selenide.$x;
 
 public class AgodaHotelDetailPage extends BasePage {
 
-    private final SelenideElement hotelName = $x("//h1[@data-selenium='hotel-header-name']"); // update with actual selector
-    private final SelenideElement hotelAddress = $x("//span[@data-selenium='hotel-address-map']"); // update with actual selector
-    private final ElementsCollection facilityTags = $$x("//div[@data-element-name='atf-top-amenities']//div[@role='listitem']"); // update with actual selector
+    private final SelenideElement hotelName = $x("//h1[@data-selenium='hotel-header-name']");
+    private final SelenideElement hotelAddress = $x("//span[@data-selenium='hotel-address-map']");
+    private final ElementsCollection facilityTags = $$x("//div[@id='abouthotel-features']//div//li");
 
 
     @Step("Verify hotel name is displayed")
@@ -30,29 +32,34 @@ public class AgodaHotelDetailPage extends BasePage {
                 .shouldHave(text(expectedPlace));
     }
 
-    public void verifyDetailedReviewPointsPresent(List<String> expectedPoints) {
-        for (String point : expectedPoints) {
-            $x("//span[contains(text(), '" + point + "')]").shouldBe(visible);
-        }
-    }
-
-    @Step("Add hotel to favourites")
-    public void addToFavourites() {
-        $x("//button[@data-element-name='favorite-heart']").shouldBe(visible).click();
-    }
-
-    @Step("Verify hotel is in favourites")
-    public void verifyHotelIsInFavourites() {
-        // assert heart icon filled or success message
-    }
-
-    public void verifyFacilities(String... expectedFacilities) {
+    @Step("Verify hotel facilities include: {expectedFacilities}")
+    public void verifyHotelFacilities(String... expectedFacilities) {
         for (String facility : expectedFacilities) {
             facilityTags.findBy(text(facility)).shouldBe(visible);
         }
     }
 
+    @Step("Hover to show hotel review point detail popup")
     public void showHotelReviewDetail() {
         $x("//button[@data-testid='review-tooltip-icon']").shouldBe(visible).hover();
     }
+
+    @Step("Verify hotel detail includes name: '{hotelName}', destination: '{place}', and facility: '{facility}'")
+    public void verifyHotelDetailInformation(String hotelName, String place, String facility) {
+        verifyHotelNameDisplayed(hotelName);
+        verifyHotelDestination(place);
+        verifyHotelFacilities(facility);
+    }
+
+    @Step("Verify review points contain: {reviewPoints}")
+    public void verifyReviewPoints(List<String> reviewPoints) {
+        showHotelReviewDetail();
+
+        for (String point : reviewPoints) {
+            $$x("//div[contains(@class,'Review-travelerGrade-Cell')]//span")
+                    .findBy(Condition.text(point))
+                    .shouldBe(Condition.visible);
+        }
+    }
+
 }

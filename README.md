@@ -18,10 +18,10 @@ It is structured for easy scalability, readability, and maintainability.
 - [ ] Implement testcase
     - [x] Agoda - TC1
     - [x] Agoda - TC2
-    - [ ] Agoda - TC3
+    - [x] Agoda - TC3
     - [ ] Vietjet - TC1
     - [ ] Vietjet - TC2
-- [x] CI - Schedule test and send the notification result email
+- [ ] CI - Schedule test and send the notification result email
 
 ## 🧰 Tech Stack
 

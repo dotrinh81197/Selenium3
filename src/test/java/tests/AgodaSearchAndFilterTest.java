@@ -1,10 +1,11 @@
 package tests;
 
+import data.HotelSearchData;
+import dataFactory.TestDataFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pages.Agoda.AgodaHomePage;
 import pages.Agoda.AgodaSearchResultsPage;
-import utils.DateTimeUtils;
 
 import java.time.LocalDate;
 
@@ -20,19 +21,21 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
     int minPrice;
     int maxPrice;
     String star;
-    int expectedHotelCount = 5;
+    int expectedHotelCount;
     private AgodaHomePage agodaHomePage;
 
     @BeforeMethod
     void setup() {
-        place = "Da Nang";
-        targetRooms = 2;
-        targetAdults = 4;
-        checkInDate = DateTimeUtils.getNextFriday();
-        checkOutDate = checkInDate.plusDays(3);
-        minPrice = 500000;
-        maxPrice = 1000000;
-        star = "3";
+        HotelSearchData data = TestDataFactory.daNangWithPool();
+        place = data.getDestination();
+        targetRooms = data.getRooms();
+        targetAdults = data.getAdults();
+        checkInDate = data.getCheckInDate();
+        checkOutDate = data.getCheckOutDate();
+        minPrice = data.getMinPrice();
+        maxPrice = data.getMaxPrice();
+        star = data.getStarRating();
+        expectedHotelCount = data.getExpectedResultCount();
         agodaHomePage = new AgodaHomePage();
 
         step("Navigate to home page");

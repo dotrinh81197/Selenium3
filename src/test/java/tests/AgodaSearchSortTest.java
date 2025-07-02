@@ -1,5 +1,7 @@
 package tests;
 
+import data.HotelSearchData;
+import dataFactory.TestDataFactory;
 import listeners.TestListener;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -26,12 +28,13 @@ public class AgodaSearchSortTest extends AgodaBaseTest {
 
     @BeforeMethod
     void testSetup() {
-        place = "Da Nang";
-        targetRooms = 2;
-        targetAdults = 4;
-        checkInDate = DateTimeUtils.getNextFriday();
-        checkOutDate = checkInDate.plusDays(3);
-        expectedHotelsCount = 5;
+        HotelSearchData data = TestDataFactory.daNangWithPool();
+        place = data.getDestination();
+        targetRooms = data.getRooms();
+        targetAdults = data.getAdults();
+        checkInDate = data.getCheckInDate();
+        checkOutDate = data.getCheckOutDate();
+        expectedHotelsCount = data.getExpectedResultCount();
         agodaHomePage = new AgodaHomePage();
 
         step("Navigate to home page");

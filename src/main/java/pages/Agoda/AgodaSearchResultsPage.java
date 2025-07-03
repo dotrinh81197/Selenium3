@@ -6,6 +6,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
+import data.HotelFilterData;
 import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -22,6 +23,7 @@ import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.page;
+import static io.qameta.allure.Allure.step;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static utils.MoneyUtils.formatVND;
@@ -38,6 +40,7 @@ public class AgodaSearchResultsPage extends BasePage {
     private final SelenideElement maxPriceFilterTextbox = $("#price_box_1");
     private final SelenideElement minPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-1')]");
     private final SelenideElement maxPriceSlider = $x("//div[@id='SideBarLocationFilters']//div[contains(@class,'rc-slider-handle-2')]");
+    private final ElementsCollection reviewLabels = $$x("//span[@data-selenium='review-name']");
 
     public ElementsCollection getHotelListings() {
         return hotelListings;
@@ -102,13 +105,30 @@ public class AgodaSearchResultsPage extends BasePage {
         }
     }
 
-    @Step("Submit filter information with min price: {0}, max price: {1}, star rating: {2}")
-    public void submitFilterInfo(int minPrice, int maxPrice, String starRating) {
-        minPriceFilterTextbox.setValue(String.valueOf(minPrice));
-        maxPriceFilterTextbox.setValue(String.valueOf(maxPrice));
-        String starRatingCheckbox = "//span[.='%s-Star rating']//ancestor::label//input";
-        SelenideElement starRatingElement = $x(String.format(starRatingCheckbox, starRating));
-        starRatingElement.click();
+    @Step("Submit filter info with filter data: {filterData}")
+    public void submitFilterInfo(HotelFilterData filterData) {
+
+        if (filterData.getMinPrice() != null && filterData.getMaxPrice() != null) {
+            step("Set min price: " + filterData.getMinPrice());
+            minPriceFilterTextbox.clear();
+            minPriceFilterTextbox.setValue(String.valueOf(filterData.getMinPrice()));
+
+            step("Set max price: " + filterData.getMaxPrice());
+            maxPriceFilterTextbox.clear();
+            maxPriceFilterTextbox.setValue(String.valueOf(filterData.getMaxPrice()));
+        }
+
+        if (filterData.getRating() != null) {
+            step("Select star rating: " + filterData.getRating());
+            String starRatingXpath = String.format("//span[normalize-space()='%s-Star rating']//ancestor::label//input", filterData.getRating());
+            $x(starRatingXpath).scrollIntoView(true).click();
+        }
+
+        if (filterData.getFacility() != null) {
+            step("Select facility: " + filterData.getFacility());
+            String facilityXpath = String.format("//span[normalize-space()='%s']//ancestor::label//input", filterData.getFacility());
+            $x(facilityXpath).scrollIntoView(true).click();
+        }
     }
 
     @Step("Verify filter is highlighted with min price: {0}, max price: {1}, star rating: {2}")
@@ -238,6 +258,14 @@ public class AgodaSearchResultsPage extends BasePage {
         }
     }
 
+    @Step("Apply filter on results page")
+    public void applyFilter(HotelFilterData filterData) {
+        if (filterData.getFacility() != null) {
+            filterFacilities(filterData.getFacility());
+        }
+        // Thêm price, rating filter tại đây khi cần
+    }
+
     @Step("Get hotel name by index: {i}")
     public String getHotelNameByIndex(int i) {
         if (i < 1 || i > hotelListings.size()) {
@@ -252,7 +280,7 @@ public class AgodaSearchResultsPage extends BasePage {
     }
 
     @Step("Get first available (not sold out) hotel name")
-    public Map.Entry<Integer, String> getFirstAvailableHotelName() {
+    public Map.Entry<Integer, String> getFirstAvailableHotel() {
         for (int i = 1; i <= hotelListings.size(); i++) {
             String name = getHotelNameByIndex(i);
             SelenideElement hotelItem = hotelListings.get(i - 1);
@@ -284,9 +312,8 @@ public class AgodaSearchResultsPage extends BasePage {
     }
 
     private List<String> getDetailReviewPoint() {
-        ElementsCollection labels = $$x("//span[@data-selenium='review-name']");
-        labels.first().shouldBe(Condition.visible);
-        return labels.texts();
+        reviewLabels.first().shouldBe(Condition.visible);
+        return reviewLabels.texts();
     }
 
     @Step("Show and get review point labels for hotel at index: {index}")

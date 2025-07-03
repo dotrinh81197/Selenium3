@@ -8,9 +8,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pages.Agoda.AgodaHomePage;
 import pages.Agoda.AgodaSearchResultsPage;
-import utils.DateTimeUtils;
-
-import java.time.LocalDate;
 
 import static io.qameta.allure.Allure.step;
 
@@ -18,25 +15,15 @@ import static io.qameta.allure.Allure.step;
 public class AgodaSearchSortTest extends AgodaBaseTest {
 
     private AgodaHomePage agodaHomePage;
-
-    private String place;
-    private int targetRooms;
-    private int targetAdults;
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
-    private int expectedHotelsCount = 5;
+    private HotelSearchData searchData;
+    private int expectedHotelsCount;
 
     @BeforeMethod
     void testSetup() {
-        HotelSearchData data = TestDataFactory.daNangWithPool();
-        place = data.getDestination();
-        targetRooms = data.getRooms();
-        targetAdults = data.getAdults();
-        checkInDate = data.getCheckInDate();
-        checkOutDate = data.getCheckOutDate();
-        expectedHotelsCount = data.getExpectedResultCount();
+        searchData = TestDataFactory.searchData();
         agodaHomePage = new AgodaHomePage();
-
+        expectedHotelsCount = 5;
+        
         step("Navigate to home page");
         agodaHomePage.openAgodaHomePage();
     }
@@ -47,13 +34,13 @@ public class AgodaSearchSortTest extends AgodaBaseTest {
         agodaHomePage.selectCurrency("Vietnamese Dong");
 
         AgodaSearchResultsPage resultsPage = agodaHomePage
-                .searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
+                .searchHotel(searchData);
 
-        resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, place);
+        resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, searchData.getDestination());
 
         resultsPage.sortByLowestPrice();
 
-        resultsPage.verifyLowestPriceSortOrder(place, expectedHotelsCount);
+        resultsPage.verifyLowestPriceSortOrder(searchData.getDestination(), expectedHotelsCount);
     }
 }
 

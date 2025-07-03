@@ -1,5 +1,6 @@
 package tests;
 
+import data.HotelFilterData;
 import data.HotelSearchData;
 import dataFactory.TestDataFactory;
 import org.testng.annotations.BeforeMethod;
@@ -7,35 +8,20 @@ import org.testng.annotations.Test;
 import pages.Agoda.AgodaHomePage;
 import pages.Agoda.AgodaSearchResultsPage;
 
-import java.time.LocalDate;
-
 import static io.qameta.allure.Allure.step;
 
 public class AgodaSearchAndFilterTest extends AgodaBaseTest {
 
-    String place;
-    int targetRooms;
-    int targetAdults;
-    LocalDate checkInDate;
-    LocalDate checkOutDate;
-    int minPrice;
-    int maxPrice;
-    String star;
     int expectedHotelCount;
     private AgodaHomePage agodaHomePage;
+    private HotelSearchData searchData;
+    private HotelFilterData priceStarFilter;
 
     @BeforeMethod
     void setup() {
-        HotelSearchData data = TestDataFactory.daNangWithPool();
-        place = data.getDestination();
-        targetRooms = data.getRooms();
-        targetAdults = data.getAdults();
-        checkInDate = data.getCheckInDate();
-        checkOutDate = data.getCheckOutDate();
-        minPrice = data.getMinPrice();
-        maxPrice = data.getMaxPrice();
-        star = data.getStarRating();
-        expectedHotelCount = data.getExpectedResultCount();
+        searchData = TestDataFactory.searchData();
+        priceStarFilter = TestDataFactory.priceStarFilter();
+        expectedHotelCount = 5;
         agodaHomePage = new AgodaHomePage();
 
         step("Navigate to home page");
@@ -48,15 +34,15 @@ public class AgodaSearchAndFilterTest extends AgodaBaseTest {
         agodaHomePage.selectCurrency("Vietnamese Dong");
 
         AgodaSearchResultsPage resultsPage = agodaHomePage
-                .searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
+                .searchHotel(searchData);
 
-        resultsPage.verifySearchResultsDisplayed(expectedHotelCount, place);
+        resultsPage.verifySearchResultsDisplayed(expectedHotelCount, searchData.getDestination());
 
-        resultsPage.submitFilterInfo(minPrice, maxPrice, star);
+        resultsPage.submitFilterInfo(priceStarFilter);
 
-        resultsPage.verifyFilterHighlighted(minPrice, maxPrice, star);
+        resultsPage.verifyFilterHighlighted(priceStarFilter.getMinPrice(), priceStarFilter.getMaxPrice(), priceStarFilter.getRating());
 
-        resultsPage.verifyFilterResult(place, minPrice, maxPrice, star, expectedHotelCount);
+        resultsPage.verifyFilterResult(searchData.getDestination(), priceStarFilter.getMinPrice(), priceStarFilter.getMaxPrice(), priceStarFilter.getRating(), expectedHotelCount);
 
         resultsPage.resetPriceFilter();
 

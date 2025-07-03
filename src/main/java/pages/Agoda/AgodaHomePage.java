@@ -4,6 +4,7 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import controls.CalendarControl;
+import data.HotelSearchData;
 import io.qameta.allure.Step;
 import pages.BasePage;
 
@@ -143,11 +144,11 @@ public class AgodaHomePage extends BasePage {
         return resultsPage;
     }
 
-    @Step("Search hotel: destination {place}, check-in {checkInDate}, check-out {checkOutDate}, rooms {targetRooms}, adults {targetAdults}")
-    public AgodaSearchResultsPage searchHotel(String place, LocalDate checkInDate, LocalDate checkOutDate, int targetRooms, int targetAdults) {
-        enterDestination(place);
-        selectDates(checkInDate, checkOutDate);
-        setFamilyTravelers(targetRooms, targetAdults);
+    @Step("Search hotel: destination {searchData.destination}, check-in {searchData.checkInDate}, check-out {searchData.checkOutDate}, rooms {searchData.rooms}, adults {searchData.adults}")
+    public AgodaSearchResultsPage searchHotel(HotelSearchData searchData) {
+        enterDestination(searchData.getDestination());
+        selectDates(searchData.getCheckInDate(), searchData.getCheckOutDate());
+        setFamilyTravelers(searchData.getRooms(), searchData.getAdults());
         return clickSearchButton();
     }
 }

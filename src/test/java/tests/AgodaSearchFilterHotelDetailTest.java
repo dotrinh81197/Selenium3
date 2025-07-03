@@ -1,6 +1,7 @@
 package tests;
 
 import com.codeborne.selenide.Selenide;
+import data.HotelFilterData;
 import data.HotelSearchData;
 import dataFactory.TestDataFactory;
 import io.qameta.allure.Allure;
@@ -12,34 +13,28 @@ import pages.Agoda.AgodaHotelDetailPage;
 import pages.Agoda.AgodaSearchResultsPage;
 import utils.WindowUtils;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public class AgodaSearchFilterHotelDetailTest extends AgodaBaseTest {
-    private static final String[] EXPECTED_REVIEW_POINTS = {
+    private static final List<String> EXPECTED_REVIEW_POINTS = List.of(
             "Cleanliness", "Facilities", "Service", "Location", "Value for money"
-    };
+    );
     private AgodaHomePage agodaHomePage;
-    private String place;
-    private int targetRooms;
-    private int targetAdults;
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
+    private HotelSearchData searchData;
+    private HotelFilterData filterData;
     private int expectedHotelsCount;
     private int hotelIndex;
-    private String facility;
+    private Map.Entry<Integer, String> firstAvailableHotel;
+    private List<String> reviewPoints;
+    private String resultPageTitle;
 
     @BeforeMethod
     void testSetup() {
-        HotelSearchData data = TestDataFactory.daNangWithPool();
-        place = data.getDestination();
-        targetRooms = data.getRooms();
-        targetAdults = data.getAdults();
-        checkInDate = data.getCheckInDate();
-        checkOutDate = data.getCheckOutDate();
-        facility = data.getFacility();
-        expectedHotelsCount = data.getExpectedResultCount();
+        searchData = TestDataFactory.searchData();
+        filterData = TestDataFactory.facilityFilter();
         hotelIndex = 5;
+        expectedHotelsCount = 5;
         agodaHomePage = new AgodaHomePage();
         agodaHomePage.openAgodaHomePage();
     }
@@ -50,29 +45,28 @@ public class AgodaSearchFilterHotelDetailTest extends AgodaBaseTest {
         agodaHomePage.selectCurrency("Vietnamese Dong");
 
         AgodaSearchResultsPage resultsPage = agodaHomePage
-                .searchHotel(place, checkInDate, checkOutDate, targetRooms, targetAdults);
+                .searchHotel(searchData);
 
-        resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, place);
+        resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, searchData.getDestination());
 
-        String resultPageTitle = Selenide.title();
-        resultsPage.filterFacilities(facility);
+        resultPageTitle = Selenide.title();
+        resultsPage.filterFacilities(filterData.getFacility());
         String hotelName = resultsPage.getHotelNameByIndex(hotelIndex);
         AgodaHotelDetailPage hotelDetailPage = resultsPage.selectHotelByIndex(hotelIndex);
 
-        hotelDetailPage.verifyHotelDetailInformation(hotelName, place, facility);
+        hotelDetailPage.verifyHotelDetailInformation(hotelName, searchData.getDestination(), filterData.getFacility());
 
         Allure.step("Back to the result filter page");
         WindowUtils.switchToWindowWithTitle(resultPageTitle);
 
-        hotelName = resultsPage.getFirstAvailableHotelName().getValue();
-        int index = resultsPage.getFirstAvailableHotelName().getKey();
+        firstAvailableHotel = resultsPage.getFirstAvailableHotel();
 
-        List<String> reviewPoint = resultsPage.showAndGetReviewPopup(index);
-        Assert.assertEquals(reviewPoint, List.of(EXPECTED_REVIEW_POINTS), "Review points mismatch");
+        reviewPoints = resultsPage.showAndGetReviewPopup(firstAvailableHotel.getKey());
+        Assert.assertEquals(reviewPoints, EXPECTED_REVIEW_POINTS, "Review points mismatch");
 
-        resultsPage.gotoDetail(hotelName);
-        hotelDetailPage.verifyHotelDetailInformation(hotelName, place, facility);
-        hotelDetailPage.verifyReviewPoints(reviewPoint);
+        resultsPage.gotoDetail(firstAvailableHotel.getValue());
+        hotelDetailPage.verifyHotelDetailInformation(hotelName, searchData.getDestination(), filterData.getFacility());
+        hotelDetailPage.verifyHotelReviewCategoriesDetailVisible(reviewPoints);
 
     }
 }

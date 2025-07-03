@@ -21,8 +21,8 @@ public class TestDataFactory {
 
     public static HotelFilterData priceStarFilter() {
         return HotelFilterData.builder()
-                .minPrice(1000000)
-                .maxPrice(5000000)
+                .minPrice(500000)
+                .maxPrice(1000000)
                 .rating("3")
                 .build();
     }

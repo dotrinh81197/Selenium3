@@ -21,6 +21,7 @@ public class AgodaSearchFilterHotelDetailTest extends AgodaBaseTest {
             "Cleanliness", "Facilities", "Service", "Location", "Value for money"
     );
     private AgodaHomePage agodaHomePage;
+    private AgodaSearchResultsPage resultsPage;
     private HotelSearchData searchData;
     private HotelFilterData filterData;
     private int expectedHotelsCount;
@@ -44,7 +45,7 @@ public class AgodaSearchFilterHotelDetailTest extends AgodaBaseTest {
 
         agodaHomePage.selectCurrency("Vietnamese Dong");
 
-        AgodaSearchResultsPage resultsPage = agodaHomePage
+        resultsPage = agodaHomePage
                 .searchHotel(searchData);
 
         resultsPage.verifySearchResultsDisplayed(expectedHotelsCount, searchData.getDestination());

@@ -3,6 +3,26 @@
 This is an automation testing framework using **Java 21**, **Selenide 7.9.x**, and **TestNG**.  
 It is structured for easy scalability, readability, and maintainability.
 
+## ✅ Task-progress
+
+- [x] **Build selenide framework**
+- [ ] **Report**
+    - [x] Allure Report
+    - [ ] Report Portal
+- [ ] **Retry failed testcases**
+    - [x] Retry immediately after the testcase failed
+    - [ ] Retry failed testcases after all testcase done
+- [x] Parallel execution
+- [x] Cross browser testing
+- [ ] Selenium Grid
+- [ ] Implement testcase
+    - [x] Agoda - TC1
+    - [x] Agoda - TC2
+    - [x] Agoda - TC3
+    - [ ] Vietjet - TC1
+    - [ ] Vietjet - TC2
+- [ ] CI - Schedule test and send the notification result email
+
 ## 🧰 Tech Stack
 
 - **Java 21**

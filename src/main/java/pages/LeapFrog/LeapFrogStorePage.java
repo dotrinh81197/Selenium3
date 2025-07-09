@@ -2,6 +2,7 @@ package pages.LeapFrog;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import config.TestEnvInfo;
 import data.GameData;
 import io.qameta.allure.Step;
 
@@ -16,13 +17,14 @@ import static com.codeborne.selenide.Selenide.$x;
 import static com.codeborne.selenide.Selenide.open;
 
 public class LeapFrogStorePage {
+    private static final int EXCEL_HEADER_ROW_COUNT = 1;
     private final SelenideElement popup = $x("//div[@data-popup-name='geo-ip-mismatch-warning-popup']//button[text()='Close']");
     private final ElementsCollection cards = $$x("//div[@class='resultList']//div[@class='catalog-product']");
     private final SelenideElement paginationSelect = $("ul.inline-links li select");
 
     @Step("Open LeapFrog Store")
     public void openLeapFrogStore() {
-        open("https://store.leapfrog.com/en-us/apps/c?p=1&platforms=197&product_list_dir=asc&product_list_order=name");
+        open("/");
         closePopup();
     }
 
@@ -40,7 +42,7 @@ public class LeapFrogStorePage {
     public List<GameData> getGameInfoOfAllPages(int totalPages) {
         List<GameData> dataList = new ArrayList<>();
         int currentPage = 1;
-        int scrapedRowIndex = 2; // Start from 2 to match Excel row index (Excel row 2 = first data row)
+        int scrapedRowIndex = EXCEL_HEADER_ROW_COUNT + 1; // Start from the first data row after the header rows
 
         while (currentPage <= totalPages) {
 

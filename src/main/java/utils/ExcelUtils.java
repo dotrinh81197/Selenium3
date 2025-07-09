@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,9 +43,21 @@ public class ExcelUtils {
                 }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new ExcelProcessingException("Error reading the Excel file: " + filePath, e);
+        } catch (RuntimeException e) {
+            throw new ExcelProcessingException("Unexpected error while processing the Excel file: " + filePath, e);
         }
         return dataList;
     }
 }
+
+/**
+ * Custom unchecked exception for errors during Excel file processing.
+ */
+class ExcelProcessingException extends RuntimeException {
+    public ExcelProcessingException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+

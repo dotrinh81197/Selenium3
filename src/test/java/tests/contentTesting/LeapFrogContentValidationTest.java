@@ -7,10 +7,7 @@ import data.GameData;
 import dataFactory.GameDataMapper;
 import io.qameta.allure.selenide.AllureSelenide;
 import listeners.TestListener;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Listeners;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import pages.LeapFrog.LeapFrogStorePage;
 import utils.DataComparator;
 import utils.ExcelUtils;
@@ -22,21 +19,15 @@ import java.util.List;
 import static io.qameta.allure.Allure.step;
 import static org.testng.Assert.assertNotNull;
 
-@Listeners(TestListener.class)
-public class LeapFrogContentValidationTest {
+public class LeapFrogContentValidationTest extends LeapFrogBaseTest{
     int totalPage;
     URL resource;
-    private List<GameData> expectedData;
     private LeapFrogStorePage storePage;
+    private List<GameData> expectedData;
     private List<GameData> actualData;
 
-    @BeforeClass
+    @BeforeMethod
     public void setup() throws Exception {
-        SelenideLogger.addListener("AllureSelenide",
-                new AllureSelenide()
-                        .screenshots(true)
-                        .savePageSource(true)
-        );
 
         storePage = new LeapFrogStorePage();
 
@@ -54,11 +45,4 @@ public class LeapFrogContentValidationTest {
         DataComparator.compareGameData(actualData, expectedData);
     }
 
-    @AfterMethod
-    void tearDown() {
-        if (WebDriverRunner.hasWebDriverStarted()) {
-            Selenide.closeWebDriver();
-            step("Browser closed after test.");
-        }
-    }
 }

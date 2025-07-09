@@ -1,4 +1,4 @@
-package tests;
+package tests.contentTesting;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
@@ -14,11 +14,12 @@ import org.testng.annotations.Listeners;
 import static io.qameta.allure.Allure.step;
 
 @Listeners(TestListener.class)
-public class AgodaBaseTest {
+public class LeapFrogBaseTest {
 
     @BeforeClass
-    void globalSetup() {
-        String env = System.getProperty("Env", "agoda").toLowerCase();
+    public void globalSetup() {
+
+        String env = System.getProperty("Env", "leapfrog").toLowerCase();
         TestEnvInfo envInfo = new TestEnvInfo(env + ".properties");
         Configuration.baseUrl = System.getProperty("BASE_URL", envInfo.getBaseURL());
 
@@ -27,6 +28,14 @@ public class AgodaBaseTest {
                         .screenshots(true)
                         .savePageSource(true)
         );
+    }
+
+    @AfterMethod
+    void tearDown() {
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.closeWebDriver();
+            step("Browser closed after test.");
+        }
     }
 
 }

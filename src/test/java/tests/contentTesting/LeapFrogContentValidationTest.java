@@ -1,13 +1,9 @@
 package tests.contentTesting;
 
-import com.codeborne.selenide.Selenide;
-import com.codeborne.selenide.WebDriverRunner;
-import com.codeborne.selenide.logevents.SelenideLogger;
 import data.GameData;
 import dataFactory.GameDataMapper;
-import io.qameta.allure.selenide.AllureSelenide;
-import listeners.TestListener;
-import org.testng.annotations.*;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import pages.LeapFrog.LeapFrogStorePage;
 import utils.DataComparator;
 import utils.ExcelUtils;
@@ -16,10 +12,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-import static io.qameta.allure.Allure.step;
 import static org.testng.Assert.assertNotNull;
 
-public class LeapFrogContentValidationTest extends LeapFrogBaseTest{
+public class LeapFrogContentValidationTest extends LeapFrogBaseTest {
     int totalPage;
     URL resource;
     private LeapFrogStorePage storePage;

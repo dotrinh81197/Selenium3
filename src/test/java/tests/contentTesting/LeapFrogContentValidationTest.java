@@ -15,7 +15,7 @@ import java.util.List;
 import static org.testng.Assert.assertNotNull;
 
 public class LeapFrogContentValidationTest extends LeapFrogBaseTest {
-    int totalPage;
+    int totalPages;
     URL resource;
     private LeapFrogStorePage storePage;
     private List<GameData> expectedData;
@@ -35,8 +35,8 @@ public class LeapFrogContentValidationTest extends LeapFrogBaseTest {
 
     @Test(description = "Validate LeapFrog store content matches reference sheet")
     public void leapFrogStoreContentTest() {
-        totalPage = storePage.getTotalResultPage();
-        actualData = storePage.getGameInfoOfAllPages(totalPage);
+        totalPages = storePage.getTotalResultPage();
+        actualData = storePage.getGameInfoOfAllPages(totalPages);
         DataComparator.compareGameData(actualData, expectedData);
     }
 

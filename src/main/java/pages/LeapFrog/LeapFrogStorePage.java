@@ -2,7 +2,6 @@ package pages.LeapFrog;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import config.TestEnvInfo;
 import data.GameData;
 import io.qameta.allure.Step;
 
@@ -11,10 +10,7 @@ import java.util.List;
 
 import static com.codeborne.selenide.Condition.hidden;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$x;
-import static com.codeborne.selenide.Selenide.$x;
-import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.*;
 
 public class LeapFrogStorePage {
     private static final int EXCEL_HEADER_ROW_COUNT = 1;
@@ -29,7 +25,7 @@ public class LeapFrogStorePage {
     }
 
     public int getTotalResultPage() {
-        return paginationSelect.getOptions().size() - 1;
+        return paginationSelect.getOptions().size() - 1; // Exclude the first option, which displays information but is not a valid option
     }
 
     private void closePopup() {

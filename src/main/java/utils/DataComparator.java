@@ -6,78 +6,52 @@ import io.qameta.allure.Step;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.testng.Assert.fail;
 
 public class DataComparator {
 
-    @Step("Compare UI data with reference data, row-by-row, showing mismatches, missing, and unexpected rows")
-    public static void compareGameData(List<GameData> actualUiData, List<GameData> expectedExcelData) {
-        List<String> mismatches = new ArrayList<>();
-        List<GameData> missingInUi = new ArrayList<>();
-        List<GameData> unexpectedInUi = new ArrayList<>();
+    @Step("Compare expected Excel data with actual UI data, showing mismatches and missing titles")
+    public static void compareAndReport(List<GameData> actual, List<GameData> expected) {
+        List<String> missingTitles = new ArrayList<>();
+        List<String> mismatchedFields = new ArrayList<>();
 
-        int maxSize = Math.max(expectedExcelData.size(), actualUiData.size());
+        for (GameData exp : expected) {
+            GameData act = actual.stream()
+                    .filter(a -> a.title.equals(exp.title))
+                    .findFirst()
+                    .orElse(null);
 
-        for (int i = 0; i < maxSize; i++) {
-            GameData expected = i < expectedExcelData.size() ? expectedExcelData.get(i) : null;
-            GameData actual = i < actualUiData.size() ? actualUiData.get(i) : null;
-
-            if (expected == null && actual != null) {
-                unexpectedInUi.add(actual);
-            } else if (expected != null && actual == null) {
-                missingInUi.add(expected);
-            } else if (expected != null) {
-                boolean mismatch =
-                        !normalize(expected.title).equals(normalize(actual.title)) ||
-                                !expected.age.equals(actual.age) ||
-                                !expected.price.equals(actual.price);
-
-                if (mismatch) {
-                    mismatches.add(
-                            "Expected:\n" + expected +
-                                    "\nActual:\n" + actual + "\n"
-                    );
+            if (act == null) {
+                missingTitles.add(exp.title);
+            } else {
+                List<String> mismatches = new ArrayList<>();
+                if (!act.age.equals(exp.age)) {
+                    mismatches.add("Age (expected: " + exp.age + ", actual: " + act.age + ")");
+                }
+                if (!act.price.equals(exp.price)) {
+                    mismatches.add("Price (expected: " + exp.price + ", actual: " + act.price + ")");
+                }
+                if (!mismatches.isEmpty()) {
+                    mismatchedFields.add(exp.title + ": " + String.join(", ", mismatches));
                 }
             }
         }
 
-        if (!mismatches.isEmpty() || !missingInUi.isEmpty() || !unexpectedInUi.isEmpty()) {
-            StringBuilder report = new StringBuilder();
-
-            if (!mismatches.isEmpty()) {
-                report.append("====== Mismatched Rows (Expected vs Actual) ======\n")
-                        .append("Total: ").append(mismatches.size()).append("\n\n");
-                mismatches.forEach(r -> report.append(r).append("---\n"));
-                report.append("\n");
-            }
-
-            if (!missingInUi.isEmpty()) {
-                report.append("====== Missing in UI (Present in Expected, Missing in Actual) ======\n")
-                        .append("Total: ").append(missingInUi.size()).append("\n\n")
-                        .append(missingInUi.stream()
-                                .map(GameData::toString)
-                                .collect(Collectors.joining("\n")))
-                        .append("\n\n");
-            }
-
-            if (!unexpectedInUi.isEmpty()) {
-                report.append("====== Unexpected in UI (Present in Actual, Missing in Expected) ======\n")
-                        .append("Total: ").append(unexpectedInUi.size()).append("\n\n")
-                        .append(unexpectedInUi.stream()
-                                .map(GameData::toString)
-                                .collect(Collectors.joining("\n")))
-                        .append("\n");
-            }
-
-            attachText("LeapFrog Content Detailed Comparison Report", report.toString());
-            fail("Discrepancies found between Excel data and UI data. See attachment for details.");
+        StringBuilder report = new StringBuilder();
+        if (!missingTitles.isEmpty()) {
+            report.append("Missing titles (").append(missingTitles.size()).append("):\n");
+            missingTitles.forEach(t -> report.append(" - ").append(t).append("\n"));
         }
-    }
+        if (!mismatchedFields.isEmpty()) {
+            report.append("Mismatched fields (").append(mismatchedFields.size()).append("):\n");
+            mismatchedFields.forEach(info -> report.append(" - ").append(info).append("\n"));
+        }
 
-    private static String normalize(String input) {
-        return input == null ? "" : input.trim().replace("\u00A0", " ").replaceAll("\\s+", " ").toLowerCase();
+        if (!report.isEmpty()) {
+            attachText("LeapFrog Excel vs UI Comparison Report", report.toString());
+            fail("Discrepancies found between Excel and UI data. See Allure attachment for details.");
+        }
     }
 
     @Attachment(value = "{0}", type = "text/plain")

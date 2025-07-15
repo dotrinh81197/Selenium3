@@ -29,14 +29,13 @@ public class ExcelUtils {
 
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
-            boolean firstRow = true;
+
+            if (rowIterator.hasNext()) {
+                rowIterator.next(); // Skip header row
+            }
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                if (firstRow) { // Skip header row
-                    firstRow = false;
-                    continue;
-                }
                 T data = mapper.apply(row);
                 if (data != null) {
                     dataList.add(data);

@@ -21,7 +21,9 @@ It is structured for easy scalability, readability, and maintainability.
     - [x] Agoda - TC3
     - [ ] Vietjet - TC1
     - [ ] Vietjet - TC2
-- [ ] CI - Schedule test and send the notification result email
+- [x] CI - Schedule test and send the notification result email
+- [ ] User Case
+    - [x] Content Testing
 
 ## 🧰 Tech Stack
 

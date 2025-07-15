@@ -29,4 +29,12 @@ public class AgodaBaseTest {
         );
     }
 
+    @AfterMethod
+    void tearDown() {
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.closeWebDriver();
+            step("Browser closed after test.");
+        }
+    }
+
 }
